@@ -101,7 +101,7 @@ public class UserDAOImplPostgres implements UserDAO {
             }
 
             // add any associated reimbursement requests
-            if (newUser instanceof Employee) {
+            if (newUser instanceof Employee && ((Employee) newUser).getRequests() != null) {
                 for (ReimbursementRequest request : ((Employee) newUser).getRequests()) {
                     sql = "insert into requests (submitterID, resolverID, amount, timeSubmitted, category, description, status) " +
                             "values (?, ?, ?, ?, ?, ?, ?) returning requestID;";

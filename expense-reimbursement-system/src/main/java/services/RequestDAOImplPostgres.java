@@ -12,7 +12,7 @@ import java.util.List;
 
 public class RequestDAOImplPostgres implements RequestDAO {
     private static final Logger log = LogManager.getLogger(RequestDAOImplPostgres.class.getName());
-    DataSource dataSource;
+    private final DataSource dataSource;
 
     RequestDAOImplPostgres(DataSource dataSource) {
         this.dataSource = dataSource;
