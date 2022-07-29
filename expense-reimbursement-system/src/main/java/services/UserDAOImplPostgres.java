@@ -2,7 +2,6 @@ package services;
 
 import models.Employee;
 import models.Manager;
-import models.ReimbursementRequest;
 import models.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,6 +19,74 @@ public class UserDAOImplPostgres implements UserDAO {
     public UserDAOImplPostgres(DataSource dataSource) {
         this.dataSource = dataSource;
         log.debug("PostgreSQL DAO created");
+    }
+
+    /**
+     * Insert a new user into the database
+     * @param newUser The user to insert
+     * @return The generated userID or -1 if user wasn't inserted
+     */
+    @Override
+    public int addNewUser(User newUser) {
+        try {
+            Connection connection = dataSource.getConnection();
+            connection.setAutoCommit(false);
+
+            String sql = "insert into users (password, userType, firstName, lastName, email, dob) values (?, ?, ?, ?, ?, ?);";
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            String userType = "";
+            if (newUser instanceof Employee) userType = "Employee";
+            else if (newUser instanceof Manager) userType = "Manager";
+            ps.setString(1, newUser.getPassword());
+            ps.setString(2, userType);
+            ps.setString(3, newUser.getFirstName());
+            ps.setString(4, newUser.getLastName());
+            ps.setString(5, (newUser instanceof Employee ? ((Employee) newUser).getEmail() : null));
+            ps.setTimestamp(6, Timestamp.valueOf(newUser.getDob().atStartOfDay()));
+            log.debug("Attempting database insert for new user");
+            ps.executeUpdate();
+
+            // get the generated userID
+            ResultSet keys = ps.getGeneratedKeys();
+            int newUserID = keys.next() ? keys.getInt(1) : -1;
+
+            connection.commit();
+            return newUserID;
+        } catch (SQLException e) {
+            log.error("Database insert failed");
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    /**
+     * Update the information of an existing user
+     * @param updatedUser The user to update
+     * @return True if the specified user was successfully found and updated, false otherwise
+     */
+    @Override
+    public boolean updateUser(User updatedUser) {
+        try {
+            Connection connection = dataSource.getConnection();
+            connection.setAutoCommit(false);
+
+            String sql = "update users set password=?, firstName=?, lastName=?, email=?, dob=? where userID=?;";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, updatedUser.getPassword());
+            ps.setString(2, updatedUser.getFirstName());
+            ps.setString(3, updatedUser.getLastName());
+            if (updatedUser instanceof Employee) ps.setString(4, ((Employee) updatedUser).getEmail());
+            else ps.setNull(4, Types.NULL);
+            ps.setTimestamp(5, Timestamp.valueOf(updatedUser.getDob().atStartOfDay()));
+            log.debug("Attempting database update for existing user");
+            int rows = ps.executeUpdate();
+            connection.commit();
+            return rows > 0;
+        } catch (SQLException e) {
+            log.error("Database update failed");
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -67,75 +134,6 @@ public class UserDAOImplPostgres implements UserDAO {
     }
 
     /**
-     * Insert a new user and any associated reimbursement requests into the database. Set the generated userID and requestID(s) returned from inserting.
-     * @param newUser The user to insert
-     * @return True if the new user was inserted, false if not
-     */
-    @Override
-    public boolean addNewUser(User newUser) {
-        try {
-            Connection connection = dataSource.getConnection();
-            connection.setAutoCommit(false);
-
-            String sql = "insert into users (password, userType, firstName, lastName, email, dob) values (?, ?, ?, ?, ?, ?);";
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            String userType = "";
-            if (newUser instanceof Employee) userType = "Employee";
-            else if (newUser instanceof Manager) userType = "Manager";
-            ps.setString(1, newUser.getPassword());
-            ps.setString(2, userType);
-            ps.setString(3, newUser.getFirstName());
-            ps.setString(4, newUser.getLastName());
-            ps.setString(5, (newUser instanceof Employee ? ((Employee) newUser).getEmail() : null));
-            ps.setTimestamp(6, Timestamp.valueOf(newUser.getDob().atStartOfDay()));
-            log.debug("Attempting database insert for new user");
-            ps.executeUpdate();
-
-            // get the generated userID and add to the user
-            ResultSet keys = ps.getGeneratedKeys();
-            if (keys.next()) {
-                int newUserID = keys.getInt(1);
-                newUser.setUserID(newUserID);
-            } else {
-                return false;
-            }
-
-            // add any associated reimbursement requests
-            if (newUser instanceof Employee && ((Employee) newUser).getRequests() != null) {
-                for (ReimbursementRequest request : ((Employee) newUser).getRequests()) {
-                    sql = "insert into requests (submitterID, resolverID, amount, timeSubmitted, category, description, status) " +
-                            "values (?, ?, ?, ?, ?, ?, ?) returning requestID;";
-                    ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                    ps.setInt(1, request.getSubmitterID());
-                    if (request.getResolverID() > 0) ps.setInt(2, request.getResolverID());
-                    else ps.setNull(2, Types.NULL);
-                    ps.setLong(3, request.getAmount());
-                    ps.setTimestamp(4, Timestamp.valueOf(request.getTimeSubmitted()));
-                    ps.setString(5, request.getCategory());
-                    ps.setString(6, request.getDescription());
-                    ps.setString(7, request.getStatus());
-                    log.debug("Attempting database insert for new reimbursement request");
-                    ps.executeUpdate();
-
-                    // get the generated requestID and add to the request
-                    keys = ps.getGeneratedKeys();
-                    if (keys.next()) {
-                        int newRequestID = keys.getInt(1);
-                        request.setRequestID(newRequestID);
-                    }
-                }
-            }
-
-            connection.commit();
-            return true;
-        } catch (SQLException e) {
-            log.error("Database insert failed");
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    /**
      * Search the database for a user with the given id
      * @param userID The user's id
      * @return A new user object if found, null otherwise
@@ -174,36 +172,6 @@ public class UserDAOImplPostgres implements UserDAO {
             e.printStackTrace();
         }
         return null;
-    }
-
-    /**
-     * Update the information of an existing user
-     * @param updatedUser The user to update
-     * @return True if the specified user was successfully found and updated, false otherwise
-     */
-    @Override
-    public boolean updateUser(User updatedUser) {
-        try {
-            Connection connection = dataSource.getConnection();
-            connection.setAutoCommit(false);
-
-            String sql = "update users set password=?, firstName=?, lastName=?, email=?, dob=? where userID=?;";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, updatedUser.getPassword());
-            ps.setString(2, updatedUser.getFirstName());
-            ps.setString(3, updatedUser.getLastName());
-            if (updatedUser instanceof Employee) ps.setString(4, ((Employee) updatedUser).getEmail());
-            else ps.setNull(4, Types.NULL);
-            ps.setTimestamp(5, Timestamp.valueOf(updatedUser.getDob().atStartOfDay()));
-            log.debug("Attempting database update for existing user");
-            int rows = ps.executeUpdate();
-            connection.commit();
-            return rows > 0;
-        } catch (SQLException e) {
-            log.error("Database update failed");
-            e.printStackTrace();
-        }
-        return false;
     }
 
     /**

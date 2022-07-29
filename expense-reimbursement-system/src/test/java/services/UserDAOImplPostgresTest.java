@@ -16,16 +16,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserDAOImplPostgresTest {
     private UserDAOImplPostgres dao;
     private Employee testEmployee;
-    private ReimbursementRequest testRequest;
 
     @Mock private DataSource dataSource;
     @Mock private Connection con;
@@ -36,15 +32,13 @@ public class UserDAOImplPostgresTest {
     public void setUp() throws Exception {
         assertNotNull(dataSource);
         dao = new UserDAOImplPostgres(dataSource);
-        testRequest = new ReimbursementRequest();
-        testRequest.setTimeSubmitted(LocalDateTime.now());
         testEmployee = new Employee(123,
                 "password!123",
                 "Morgan",
                 "Freeman",
                 LocalDate.of(1970, 1, 1),
                 "mfreeman@gmail.com",
-                new ArrayList<>(Collections.singletonList(testRequest)));
+                null);
 
         Mockito.when(con.prepareStatement(Mockito.anyString())).thenReturn(ps);
         Mockito.when(con.prepareStatement(Mockito.anyString(), Mockito.anyInt())).thenReturn(ps);
@@ -86,17 +80,14 @@ public class UserDAOImplPostgresTest {
 
     @Test
     public void testAddNewUser() throws SQLException {
-        Mockito.when(rs.getInt(1)).thenReturn(23, 67);  // new user ID = 23, new request ID = 67
-        Mockito.when(rs.next()).thenReturn(true, true);
-        assertTrue(dao.addNewUser(testEmployee));
-        assertEquals(23, testEmployee.getUserID());
-        assertEquals(67, testRequest.getRequestID());
+        Mockito.when(rs.getInt(1)).thenReturn(23);  // new user ID = 23
+        assertEquals(23, dao.addNewUser(testEmployee));
     }
 
     @Test
     public void testInvalidAddNewUser() throws SQLException {
         Mockito.when(ps.executeUpdate()).thenThrow(SQLException.class);
-        assertFalse(dao.addNewUser(testEmployee));
+        assertEquals(-1, dao.addNewUser(testEmployee));
     }
 
     @Test

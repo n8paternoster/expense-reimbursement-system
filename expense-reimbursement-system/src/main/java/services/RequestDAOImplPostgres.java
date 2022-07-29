@@ -14,7 +14,7 @@ public class RequestDAOImplPostgres implements RequestDAO {
     private static final Logger log = LogManager.getLogger(RequestDAOImplPostgres.class.getName());
     private final DataSource dataSource;
 
-    RequestDAOImplPostgres(DataSource dataSource) {
+    public RequestDAOImplPostgres(DataSource dataSource) {
         this.dataSource = dataSource;
         log.debug("Request DAO created");
     }
@@ -22,10 +22,10 @@ public class RequestDAOImplPostgres implements RequestDAO {
     /**
      * Add a new reimbursement request to the database
      * @param r The reimbursement request to insert
-     * @return True if the new request was added, false if not
+     * @return The generated requestID or -1 if the request wasn't inserted
      */
     @Override
-    public boolean addRequest(ReimbursementRequest r) {
+    public int addRequest(ReimbursementRequest r) {
         try {
             Connection connection = dataSource.getConnection();
             connection.setAutoCommit(false);
@@ -43,19 +43,41 @@ public class RequestDAOImplPostgres implements RequestDAO {
             log.debug("Attempting database insert for new reimbursement request");
             ps.executeUpdate();
 
-            // get the generated userID and add to the request
+            // get the generated requestID
             ResultSet keys = ps.getGeneratedKeys();
-            if (keys.next()) {
-                int newRequestID = keys.getInt(1);
-                r.setRequestID(newRequestID);
-            } else {
-                return false;
-            }
+            int newRequestID = keys.next() ? keys.getInt(1) : -1;
 
             connection.commit();
-            return true;
+            return newRequestID;
         } catch (SQLException e) {
             log.error("Database insert failed");
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    /**
+     * Update a request's status
+     * @param requestID The reimbursement request's id
+     * @param resolution The updated status
+     * @return True if the request was successfully updated, false otherwise
+     */
+    @Override
+    public boolean resolveRequest(int requestID, String resolution) {
+        try {
+            Connection connection = dataSource.getConnection();
+            connection.setAutoCommit(false);
+
+            String sql = "update requests set status=? where requestID=?;";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, resolution);
+            ps.setInt(2, requestID);
+            log.debug("Attempting database update for a request's status");
+            int rows = ps.executeUpdate();
+            connection.commit();
+            return rows > 0;
+        } catch (SQLException e) {
+            log.error("Database update failed");
             e.printStackTrace();
         }
         return false;
@@ -244,32 +266,5 @@ public class RequestDAOImplPostgres implements RequestDAO {
             e.printStackTrace();
         }
         return requests;
-    }
-
-    /**
-     * Update a request's status
-     * @param requestID The reimbursement request's id
-     * @param resolution The updated status
-     * @return True if the request was successfully updated, false otherwise
-     */
-    @Override
-    public boolean resolveRequest(int requestID, String resolution) {
-        try {
-            Connection connection = dataSource.getConnection();
-            connection.setAutoCommit(false);
-
-            String sql = "update requests set status=? where requestID=?;";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, resolution);
-            ps.setInt(2, requestID);
-            log.debug("Attempting database update for a request's status");
-            int rows = ps.executeUpdate();
-            connection.commit();
-            return rows > 0;
-        } catch (SQLException e) {
-            log.error("Database update failed");
-            e.printStackTrace();
-        }
-        return false;
     }
 }

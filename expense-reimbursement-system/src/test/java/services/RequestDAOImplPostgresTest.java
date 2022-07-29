@@ -62,14 +62,13 @@ public class RequestDAOImplPostgresTest {
     @Test
     public void testAddRequest() throws SQLException {
         Mockito.when(rs.getInt(1)).thenReturn(56);
-        assertTrue(dao.addRequest(testRequest));
-        assertEquals(56, testRequest.getRequestID());
+        assertEquals(56, dao.addRequest(testRequest));
     }
 
     @Test
     public void testInvalidAddRequest() throws SQLException {
         Mockito.when(ps.executeUpdate()).thenThrow(SQLException.class);
-        assertFalse(dao.addRequest(testRequest));
+        assertTrue(dao.addRequest(testRequest) < 0);
     }
 
     @Test

@@ -6,10 +6,14 @@ import models.User;
 import java.util.List;
 
 public interface UserDAO {
-    User authenticateUser(int userID, String password);
-    boolean addNewUser(User newUser);
-    User getUser(int userID);
+
+    // insert/update
+    int addNewUser(User newUser);
     boolean updateUser(User updatedUser);
+
+    // get
+    User authenticateUser(int userID, String password);
+    User getUser(int userID);
     List<Employee> getAllEmployees();
     boolean emailIsAvailable(String email);
 }
