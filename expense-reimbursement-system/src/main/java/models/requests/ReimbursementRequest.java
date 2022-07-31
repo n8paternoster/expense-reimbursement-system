@@ -1,4 +1,4 @@
-package models;
+package models.requests;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +24,12 @@ public class ReimbursementRequest {
         this.timeSubmitted = timeSubmitted;
         this.status = status;
     }
+    public ReimbursementRequest(long amount, String category, String description) {
+        this.amount = amount;
+        this.category = category;
+        this.description = description;
+    }
+
     public int getRequestID() {
         return requestID;
     }

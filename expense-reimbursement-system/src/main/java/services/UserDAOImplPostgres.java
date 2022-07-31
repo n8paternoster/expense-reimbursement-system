@@ -1,8 +1,8 @@
 package services;
 
-import models.Employee;
-import models.Manager;
-import models.User;
+import models.users.Employee;
+import models.users.Manager;
+import models.users.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -78,6 +78,7 @@ public class UserDAOImplPostgres implements UserDAO {
             if (updatedUser instanceof Employee) ps.setString(4, ((Employee) updatedUser).getEmail());
             else ps.setNull(4, Types.NULL);
             ps.setTimestamp(5, Timestamp.valueOf(updatedUser.getDob().atStartOfDay()));
+            ps.setInt(6, updatedUser.getUserID());
             log.debug("Attempting database update for existing user");
             int rows = ps.executeUpdate();
             connection.commit();
@@ -185,7 +186,7 @@ public class UserDAOImplPostgres implements UserDAO {
             Connection connection = dataSource.getConnection();
             connection.setAutoCommit(false);
 
-            String sql = "select userID, firstName, lastName, email, dob from users where userType='Employee';";
+            String sql = "select userID, firstName, lastName, email, dob from users where userType='Employee' order by userID asc;";
             PreparedStatement ps = connection.prepareStatement(sql);
             log.debug("Attempting database query for all employees");
             ResultSet rs = ps.executeQuery();

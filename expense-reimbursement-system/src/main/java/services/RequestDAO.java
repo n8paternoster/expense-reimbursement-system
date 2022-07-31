@@ -1,6 +1,6 @@
 package services;
 
-import models.ReimbursementRequest;
+import models.requests.ReimbursementRequest;
 
 import java.util.List;
 
@@ -12,8 +12,10 @@ public interface RequestDAO {
 
     // get
     ReimbursementRequest getRequest(int requestID);
+    List<ReimbursementRequest> getRequests(int userID);
     List<ReimbursementRequest> getPendingRequests(int userID);
     List<ReimbursementRequest> getResolvedRequests(int userID);
+    List<ReimbursementRequest> getAllRequests();
     List<ReimbursementRequest> getAllPendingRequests();
     List<ReimbursementRequest> getAllResolvedRequests();
 

@@ -2,9 +2,8 @@ package services;
 
 import static org.junit.Assert.*;
 
-import models.Employee;
-import models.ReimbursementRequest;
-import models.User;
+import models.users.Employee;
+import models.users.User;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

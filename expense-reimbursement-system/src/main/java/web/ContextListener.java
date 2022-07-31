@@ -12,7 +12,7 @@ import javax.sql.DataSource;
 
 public class ContextListener implements ServletContextListener {
 
-    @Resource(name="jdbc/ersdb")
+    @Resource(name="jdbc/ersDB")
     private DataSource dataSource;
 
     @Override

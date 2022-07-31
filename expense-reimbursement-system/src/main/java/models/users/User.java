@@ -1,4 +1,4 @@
-package models;
+package models.users;
 
 import java.time.LocalDate;
 
@@ -17,6 +17,9 @@ public abstract class User {
         this.firstName = firstName;
         this.lastName = lastName;
         this.dob = dob;
+    }
+    public User(int userID, String password) {
+        this(userID, password, "", "", null);
     }
     public int getUserID() {
         return userID;

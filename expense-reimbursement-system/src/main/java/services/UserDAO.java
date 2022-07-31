@@ -1,7 +1,7 @@
 package services;
 
-import models.Employee;
-import models.User;
+import models.users.Employee;
+import models.users.User;
 
 import java.util.List;
 

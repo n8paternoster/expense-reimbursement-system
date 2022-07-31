@@ -1,7 +1,7 @@
 package controllers;
 
-import models.Employee;
-import models.Manager;
+import models.users.Employee;
+import models.users.User;
 import services.UserDAO;
 
 import java.time.LocalDate;
@@ -14,8 +14,6 @@ public class ManagerController extends UserController {
     }
 
     public int addNewEmployee(String password, String firstName, String lastName, LocalDate dob, String email) throws RuntimeException {
-        if (activeUser == null || !(activeUser instanceof Manager))
-            throw new RuntimeException("Forbidden");
         if (!dao.emailIsAvailable(email))
             throw new RuntimeException("Email address is unavailable");
         Employee newEmployee = new Employee(-1, password, firstName, lastName, dob, email, null);
@@ -25,9 +23,12 @@ public class ManagerController extends UserController {
         return generatedID;
     }
 
-    public List<Employee> viewAllEmployees() throws RuntimeException {
-        if (activeUser == null || !(activeUser instanceof Manager))
-            throw new RuntimeException("Forbidden");
+    public Employee viewEmployee(int userID) {
+        User u = dao.getUser(userID);
+        return (u instanceof Employee) ? (Employee) u : null;
+    }
+
+    public List<Employee> viewAllEmployees() {
         return dao.getAllEmployees();
     }
 

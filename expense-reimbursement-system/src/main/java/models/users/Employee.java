@@ -1,4 +1,6 @@
-package models;
+package models.users;
+
+import models.requests.ReimbursementRequest;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,6 +17,10 @@ public class Employee extends User {
         this.email = email;
         this.requests = requests;
     }
+    public Employee(String password, String firstName, String lastName, LocalDate dob, String email) {
+        this(-1, password, firstName, lastName, dob, email, null);
+    }
+
     public String getEmail() {
         return email;
     }

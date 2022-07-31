@@ -1,6 +1,6 @@
 package services;
 
-import models.ReimbursementRequest;
+import models.requests.ReimbursementRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -121,6 +121,44 @@ public class RequestDAOImplPostgres implements RequestDAO {
     }
 
     /**
+     * Get all requests belonging to the user with the specified userID
+     * @param userID The specified user's id
+     * @return A list of reimbursement requests
+     */
+    @Override
+    public List<ReimbursementRequest> getRequests(int userID) {
+        List<ReimbursementRequest> requests = new ArrayList<>();
+        try {
+            Connection connection = dataSource.getConnection();
+            connection.setAutoCommit(false);
+
+            String sql = "select requestID, resolverID, amount, timeSubmitted, category, description, status from requests where submitterID=? order by timeSubmitted desc;";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, userID);
+            log.debug("Attempting database query for all requests belonging to one user");
+            ResultSet rs = ps.executeQuery();
+            connection.commit();
+
+            while (rs.next()) {
+                int requestID = rs.getInt("requestID");
+                int resolverID = rs.getInt("resolverID");
+                long amount = rs.getLong("amount");
+                Timestamp ts = rs.getTimestamp("timeSubmitted");
+                LocalDateTime timeSubmitted = (ts != null) ? ts.toLocalDateTime() : null;
+                String category = rs.getString("category");
+                String description = rs.getString("description");
+                String status = rs.getString("status");
+                log.debug("Database query found a reimbursement request");
+                requests.add(new ReimbursementRequest(requestID, userID, resolverID, amount, category, description, timeSubmitted, status));
+            }
+        } catch (SQLException e) {
+            log.error("Database query failed");
+            e.printStackTrace();
+        }
+        return requests;
+    }
+
+    /**
      * Get all pending requests belonging to the user with the specified userID
      * @param userID The specified user's id
      * @return A list of pending reimbursement requests
@@ -132,7 +170,7 @@ public class RequestDAOImplPostgres implements RequestDAO {
             Connection connection = dataSource.getConnection();
             connection.setAutoCommit(false);
 
-            String sql = "select requestID, resolverID, amount, timeSubmitted, category, description from requests where submitterID=? and status='Pending';";
+            String sql = "select requestID, resolverID, amount, timeSubmitted, category, description from requests where submitterID=? and status='Pending' order by timeSubmitted desc;";
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setInt(1, userID);
             log.debug("Attempting database query for all pending requests belonging to one user");
@@ -169,7 +207,7 @@ public class RequestDAOImplPostgres implements RequestDAO {
             Connection connection = dataSource.getConnection();
             connection.setAutoCommit(false);
 
-            String sql = "select requestID, resolverID, amount, timeSubmitted, category, description, status from requests where submitterID=? and status in ('Approved', 'Denied');";
+            String sql = "select requestID, resolverID, amount, timeSubmitted, category, description, status from requests where submitterID=? and status in ('Approved', 'Denied') order by timeSubmitted desc;";
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setInt(1, userID);
             log.debug("Attempting database query for all resolved requests belonging to one user");
@@ -196,6 +234,43 @@ public class RequestDAOImplPostgres implements RequestDAO {
     }
 
     /**
+     * Get all requests
+     * @return A list of reimbursement requests
+     */
+    @Override
+    public List<ReimbursementRequest> getAllRequests() {
+        List<ReimbursementRequest> requests = new ArrayList<>();
+        try {
+            Connection connection = dataSource.getConnection();
+            connection.setAutoCommit(false);
+
+            String sql = "select requestID, submitterID, resolverID, amount, timeSubmitted, category, description, status from requests order by timeSubmitted desc;";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            log.debug("Attempting database query for all requests");
+            ResultSet rs = ps.executeQuery();
+            connection.commit();
+
+            while (rs.next()) {
+                int requestID = rs.getInt("requestID");
+                int submitterID = rs.getInt("submitterID");
+                int resolverID = rs.getInt("resolverID");
+                long amount = rs.getLong("amount");
+                Timestamp ts = rs.getTimestamp("timeSubmitted");
+                LocalDateTime timeSubmitted = (ts != null) ? ts.toLocalDateTime() : null;
+                String category = rs.getString("category");
+                String description = rs.getString("description");
+                String status = rs.getString("status");
+                log.debug("Database query found a reimbursement request");
+                requests.add(new ReimbursementRequest(requestID, submitterID, resolverID, amount, category, description, timeSubmitted, status));
+            }
+        } catch (SQLException e) {
+            log.error("Database query failed");
+            e.printStackTrace();
+        }
+        return requests;
+    }
+
+    /**
      * Get all pending requests
      * @return A list of pending reimbursement requests
      */
@@ -206,7 +281,7 @@ public class RequestDAOImplPostgres implements RequestDAO {
             Connection connection = dataSource.getConnection();
             connection.setAutoCommit(false);
 
-            String sql = "select requestID, submitterID, resolverID, amount, timeSubmitted, category, description from requests where status='Pending';";
+            String sql = "select requestID, submitterID, resolverID, amount, timeSubmitted, category, description from requests where status='Pending' order by timeSubmitted desc;";
             PreparedStatement ps = connection.prepareStatement(sql);
             log.debug("Attempting database query for all pending requests");
             ResultSet rs = ps.executeQuery();
@@ -242,7 +317,7 @@ public class RequestDAOImplPostgres implements RequestDAO {
             Connection connection = dataSource.getConnection();
             connection.setAutoCommit(false);
 
-            String sql = "select requestID, submitterID, resolverID, amount, timeSubmitted, category, description, status from requests where status in ('Approved', 'Denied');";
+            String sql = "select requestID, submitterID, resolverID, amount, timeSubmitted, category, description, status from requests where status in ('Approved', 'Denied') order by timeSubmitted desc;";
             PreparedStatement ps = connection.prepareStatement(sql);
             log.debug("Attempting database query for all resolved requests");
             ResultSet rs = ps.executeQuery();

@@ -1,24 +1,21 @@
 package controllers;
 
-import models.ReimbursementRequest;
+import models.requests.ReimbursementRequest;
 import services.RequestDAO;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class ReimbursementRequestController {
-    private RequestDAO dao;
+    private final RequestDAO dao;
 
     public ReimbursementRequestController(RequestDAO dao) {
         this.dao = dao;
     }
 
-    public int submitNewRequest(int submitterID, long amount, String category, String description) throws RuntimeException {
+    public int submitNewRequest(int submitterID, long amount, String category, String description) {
         ReimbursementRequest newRequest = new ReimbursementRequest(-1, submitterID, -1, amount, category, description, LocalDateTime.now(), "Pending");
-        int generatedID = dao.addRequest(newRequest);
-        if (generatedID < 0)
-            throw new RuntimeException("Error inserting new request into the database");
-        return generatedID;
+        return dao.addRequest(newRequest);
     }
 
     public boolean resolveRequest(int requestID, String newStatus) {
@@ -29,12 +26,20 @@ public class ReimbursementRequestController {
         return dao.getRequest(requestID);
     }
 
+    public List<ReimbursementRequest> viewRequests(int userID) {
+        return dao.getRequests(userID);
+    }
+
     public List<ReimbursementRequest> viewPendingRequests(int userID) {
         return dao.getPendingRequests(userID);
     }
 
     public List<ReimbursementRequest> viewResolvedRequests(int userID) {
         return dao.getResolvedRequests(userID);
+    }
+
+    public List<ReimbursementRequest> viewAllRequests() {
+        return dao.getAllRequests();
     }
 
     public List<ReimbursementRequest> viewAllPendingRequests() {
