@@ -28,12 +28,11 @@ public class UserDAOImplPostgres implements UserDAO {
      */
     @Override
     public int addNewUser(User newUser) {
-        try {
-            Connection connection = dataSource.getConnection();
+        String sql = "insert into users (password, userType, firstName, lastName, email, dob) values (?, ?, ?, ?, ?, ?);";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
+        {
             connection.setAutoCommit(false);
-
-            String sql = "insert into users (password, userType, firstName, lastName, email, dob) values (?, ?, ?, ?, ?, ?);";
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             String userType = "";
             if (newUser instanceof Employee) userType = "Employee";
             else if (newUser instanceof Manager) userType = "Manager";
@@ -66,12 +65,11 @@ public class UserDAOImplPostgres implements UserDAO {
      */
     @Override
     public boolean updateUser(User updatedUser) {
-        try {
-            Connection connection = dataSource.getConnection();
+        String sql = "update users set password=?, firstName=?, lastName=?, email=?, dob=? where userID=?;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql))
+        {
             connection.setAutoCommit(false);
-
-            String sql = "update users set password=?, firstName=?, lastName=?, email=?, dob=? where userID=?;";
-            PreparedStatement ps = connection.prepareStatement(sql);
             ps.setString(1, updatedUser.getPassword());
             ps.setString(2, updatedUser.getFirstName());
             ps.setString(3, updatedUser.getLastName());
@@ -98,12 +96,11 @@ public class UserDAOImplPostgres implements UserDAO {
      */
     @Override
     public User authenticateUser(int userID, String password) {
-        try {
-            Connection connection = dataSource.getConnection();
+        String sql = "select userType, firstName, lastName, email, dob from users where userID=? and password=?;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql))
+        {
             connection.setAutoCommit(false);
-
-            String sql = "select userType, firstName, lastName, email, dob from users where userID=? and password=?;";
-            PreparedStatement ps = connection.prepareStatement(sql);
             ps.setInt(1, userID);
             ps.setString(2, password);
             log.debug("Attempting database query for user authentication");
@@ -141,12 +138,11 @@ public class UserDAOImplPostgres implements UserDAO {
      */
     @Override
     public User getUser(int userID) {
-        try {
-            Connection connection = dataSource.getConnection();
+        String sql = "select userType, firstName, lastName, email, dob from users where userID=?;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql))
+        {
             connection.setAutoCommit(false);
-
-            String sql = "select userType, firstName, lastName, email, dob from users where userID=?;";
-            PreparedStatement ps = connection.prepareStatement(sql);
             ps.setInt(1, userID);
             log.debug("Attempting database query for existing user");
             ResultSet rs = ps.executeQuery();
@@ -181,13 +177,12 @@ public class UserDAOImplPostgres implements UserDAO {
      */
     @Override
     public List<Employee> getAllEmployees() {
+        String sql = "select userID, firstName, lastName, email, dob from users where userType='Employee' order by userID asc;";
         List<Employee> employees = new ArrayList<>();
-        try {
-            Connection connection = dataSource.getConnection();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql))
+        {
             connection.setAutoCommit(false);
-
-            String sql = "select userID, firstName, lastName, email, dob from users where userType='Employee' order by userID asc;";
-            PreparedStatement ps = connection.prepareStatement(sql);
             log.debug("Attempting database query for all employees");
             ResultSet rs = ps.executeQuery();
             connection.commit();
@@ -217,17 +212,15 @@ public class UserDAOImplPostgres implements UserDAO {
      */
     @Override
     public boolean emailIsAvailable(String email) {
-        try {
-            Connection connection = dataSource.getConnection();
+        String sql = "select userID from users where email=?;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql))
+        {
             connection.setAutoCommit(false);
-
-            String sql = "select userID from users where email=?;";
-            PreparedStatement ps = connection.prepareStatement(sql);
             ps.setString(1, email);
             log.debug("Attempting database query for email availability");
             ResultSet rs = ps.executeQuery();
             connection.commit();
-
             return !rs.next();
         } catch (SQLException e) {
             log.error("Database query failed");

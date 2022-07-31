@@ -58,6 +58,8 @@ public class EmployeeServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        System.out.println("doGet called on EmployeeServlet with: " + req.getPathInfo());
+
         String path = req.getPathInfo();
         String[] params = path.split("/");
 
@@ -73,9 +75,10 @@ public class EmployeeServlet extends HttpServlet {
             if (params.length == 2) {
                 // employee/(userID)
 
-                resp.setStatus(200);
                 resp.setContentType("text/plain");
-                resp.getOutputStream().println("Successfully logged in, enter /profile, /update, /requests, or /logout");
+                resp.getWriter().println("Successfully logged in!");
+                resp.getWriter().println("Enter /profile, /update, /requests, or /logout");
+                resp.setStatus(200);
             } else if (params.length == 3 && params[2].equalsIgnoreCase("profile")) {
                 // employee/(userID)/profile
 
@@ -83,17 +86,18 @@ public class EmployeeServlet extends HttpServlet {
                 if (e == null) {
                     resp.setStatus(404);    // employee profile not found
                 } else {
-                    resp.setStatus(200);    // employee profile found
                     resp.setContentType("application/json");
                     resp.getWriter().write(om.writeValueAsString(e));
+                    resp.setStatus(200);    // employee profile found
                 }
             } else if (params[2].equalsIgnoreCase("requests")) {
                 if (params.length == 3) {
                     // employee/(userID)/requests
 
-                    resp.setStatus(200);
                     resp.setContentType("text/plain");
-                    resp.getOutputStream().println("Viewing requests, enter /all, /pending, /resolved, or /(requestID)");
+                    resp.getWriter().println("Viewing requests");
+                    resp.getWriter().println("Enter /all, /pending, /resolved, or /(requestID)");
+                    resp.setStatus(200);
                 } else if (params.length == 4) {
                     if (params[3].equalsIgnoreCase("pending") || params[3].equalsIgnoreCase("resolved") || params[3].equalsIgnoreCase("all")) {
                         // employee/(userID)/requests/all or employee/(userID)/requests/pending or employee/(userID)/requests/resolved
@@ -109,11 +113,11 @@ public class EmployeeServlet extends HttpServlet {
                         if (requests == null) {
                             resp.setStatus(404);    // reimbursement requests not found
                         } else {
-                            resp.setStatus(200);    // reimbursement requests found
                             resp.setContentType("application/json");
                             for (ReimbursementRequest r : requests) {
                                 resp.getWriter().write(om.writeValueAsString(r));
                             }
+                            resp.setStatus(200);    // reimbursement requests found
                         }
                     } else {
                         try {
@@ -126,9 +130,9 @@ public class EmployeeServlet extends HttpServlet {
                             } else if (r.getSubmitterID() != userID) {
                                 resp.setStatus(403);    // reimbursement request does not belong to this user
                             } else {
-                                resp.setStatus(200);    // reimbursement request found
                                 resp.setContentType("application/json");
                                 resp.getWriter().write(om.writeValueAsString(r));
+                                resp.setStatus(200);    // reimbursement request found
                             }
                         } catch (NumberFormatException e) {
                             resp.setStatus(400);
@@ -147,6 +151,8 @@ public class EmployeeServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        System.out.println("doPost called on EmployeeServlet with: " + req.getPathInfo());
+
         String path = req.getPathInfo();
         String[] params = path.split("/");
 
@@ -179,10 +185,10 @@ public class EmployeeServlet extends HttpServlet {
                 if (requestID < 0) {
                     resp.setStatus(400);    // failed to add new request
                 } else {
-                    resp.setStatus(201);    // new request added successfully
                     ReimbursementRequest request = requestController.viewRequest(requestID);
                     resp.setContentType("application/json");
                     resp.getWriter().write(om.writeValueAsString(request));
+                    resp.setStatus(201);    // new request added successfully
                 }
             } else {
                 resp.setStatus(400);
@@ -194,6 +200,8 @@ public class EmployeeServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        System.out.println("doPut called on EmployeeServlet with: " + req.getPathInfo());
+
         String path = req.getPathInfo();
         String[] params = path.split("/");
 
@@ -213,18 +221,18 @@ public class EmployeeServlet extends HttpServlet {
                 Employee updated = om.readValue(req.getInputStream(), Employee.class);
                 try {
                     boolean success = employeeController.updateProfile(userID, updated.getPassword(), updated.getFirstName(), updated.getLastName(), updated.getDob(), updated.getEmail());
-                    if (!success) {
-                        resp.setStatus(400);
-                    } else {
-                        resp.setStatus(200);
+                    if (success) {
                         Employee e = employeeController.getProfile(userID);
                         resp.setContentType("application/json");
                         resp.getWriter().write(om.writeValueAsString(e));
+                        resp.setStatus(200);    // profile was successfully updated
+                    } else {
+                        resp.setStatus(400);    // profile was not updated
                     }
                 } catch (RuntimeException e) {
-                    resp.setStatus(409);    // entered email is not available
                     resp.setContentType("plain/text");
-                    resp.getOutputStream().println(e.getMessage());
+                    resp.getWriter().println(e.getMessage());
+                    resp.setStatus(409);        // entered email is not available
                 }
             } else {
                 resp.setStatus(400);

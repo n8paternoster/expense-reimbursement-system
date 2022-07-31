@@ -30,12 +30,13 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("Login doGet called");
+        System.out.println("doGet called on LoginServlet with: " + req.getPathInfo());
+
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("DoPost called on LoginServlet");
+        System.out.println("doPost called on LoginServlet with: " + req.getPathInfo());
 
         // Get client login input
         LoginRequest loginRequest = om.readValue(req.getInputStream(), LoginRequest.class);
@@ -43,15 +44,12 @@ public class LoginServlet extends HttpServlet {
         System.out.println(loginRequest.getPassword());
 
         // Authenticate login
-        User user = userController.login(loginRequest.getUserID(), loginRequest.getPassword());
         HttpSession session = req.getSession(false);
-        System.out.println("Got user");
         if (session != null) session.invalidate();
+        User user = userController.login(loginRequest.getUserID(), loginRequest.getPassword());
         if (user != null) {
-            System.out.println("User is not null");
             session = req.getSession();
             session.setAttribute("user", user.getUserID());
-            System.out.println("Setting user attribute to: " + user.getUserID());
             session.setMaxInactiveInterval(30*60);  // session expires in 30 minutes
             if (user instanceof Employee) {
                 String path = req.getContextPath() + "/employee/" + user.getUserID();
@@ -59,16 +57,20 @@ public class LoginServlet extends HttpServlet {
                 resp.sendRedirect(path);
                 return;
             } else if (user instanceof Manager) {
-                String path = req.getContextPath() + "/manager/" + user.getUserID();
+                String path = req.getContextPath() + "/managers/" + user.getUserID();
+                System.out.println("Redirecting to " + path);
                 resp.sendRedirect(path);
                 return;
             } else {
-                // invalid login type
                 session.invalidate();
-                // report error
+                resp.setContentType("plain/text");
+                resp.getWriter().println("Invalid user type");
+                resp.setStatus(500);    // authenticated user is not a recognized type
             }
         } else {
-            // Report outcome to client
+            resp.setContentType("plain/text");
+            resp.getWriter().println("Invalid username or password entered");
+            resp.setStatus(401);        // invalid login credentials
         }
     }
 }
