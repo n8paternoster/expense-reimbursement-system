@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: rrRRsU431%
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  webapp:
+    image: ers:2.1
+    restart: on-failure
+    deploy:
+      replicas: 1
+    ports:
+      - "8080:8080"
+volumes:
+  postgres_data:

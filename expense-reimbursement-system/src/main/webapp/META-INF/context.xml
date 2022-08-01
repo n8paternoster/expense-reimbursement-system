@@ -28,6 +28,8 @@
     <!--
     <Manager pathname="" />
     -->
+    <!---->
+
     <Resource
             name="jdbc/ersDB"
             auth="Container"
@@ -36,4 +38,6 @@
             url="jdbc:postgresql://projectsdb.c3dc4knrdxxj.us-east-1.rds.amazonaws.com:5432/ersdb"
             username="npaternoster"
             password="rrRRsU431%"/>
+    <!--username="postgres"-->
+    <!--url="jdbc:postgresql://postgres:5432/postgres"-->
 </Context>
