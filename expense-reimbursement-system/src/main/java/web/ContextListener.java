@@ -10,6 +10,9 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
+/**
+ * When the servletContext is initialized, set context variables for a userDAO and requestDAO provide database access to the servlets
+ */
 public class ContextListener implements ServletContextListener {
 
     @Resource(name="jdbc/ersDB")

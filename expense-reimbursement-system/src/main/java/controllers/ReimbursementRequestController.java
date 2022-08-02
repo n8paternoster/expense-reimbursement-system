@@ -6,6 +6,9 @@ import services.RequestDAO;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Class to handle actions involving requests
+ */
 public class ReimbursementRequestController {
     private final RequestDAO dao;
 
@@ -13,6 +16,14 @@ public class ReimbursementRequestController {
         this.dao = dao;
     }
 
+    /**
+     * Add a new reimbursement request
+     * @param submitterID The user id belonging to the user submitting the request
+     * @param amount The new request's amount
+     * @param category The new request's amount
+     * @param description The new request's description
+     * @return a generated request id if successfully added, or -1 if not
+     */
     public int submitNewRequest(int submitterID, long amount, String category, String description) {
         ReimbursementRequest newRequest = new ReimbursementRequest(-1, submitterID, -1, amount, category, description, LocalDateTime.now(), "Pending");
         return dao.addRequest(newRequest);

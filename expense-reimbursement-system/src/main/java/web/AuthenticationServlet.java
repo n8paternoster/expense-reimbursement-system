@@ -7,7 +7,6 @@ import models.users.Manager;
 import models.users.User;
 import services.UserDAO;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,8 +15,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
+/**
+ * Servlet to process login requests and redirect when successful
+ */
 @WebServlet("/login")
-public class LoginServlet extends HttpServlet {
+public class AuthenticationServlet extends HttpServlet {
     private ObjectMapper om;
     private UserController userController;
 
@@ -28,20 +30,30 @@ public class LoginServlet extends HttpServlet {
         userController = new UserController(userDao);
     }
 
+    /**
+     * Prompt for login credentials
+     */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("doGet called on LoginServlet with: " + req.getPathInfo());
-
+        resp.setContentType("plain/text");
+        resp.getWriter().println("Please input your employeeID and password");
     }
 
+    /**
+     * Process a login request
+     * When a user is authenticated:
+     *      - create an HTTPSession and set a session attribute "user" containing their userID
+     *      - redirect to either /employees/(userID) or /managers/(userID)
+     * When an authentication fails:
+     *      - invalidate the current HTTPSession
+     */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("doPost called on LoginServlet with: " + req.getPathInfo());
 
         // Get client login input
         LoginRequest loginRequest = om.readValue(req.getInputStream(), LoginRequest.class);
-        System.out.println(loginRequest.getUserID());
-        System.out.println(loginRequest.getPassword());
 
         // Authenticate login
         HttpSession session = req.getSession(false);
@@ -52,7 +64,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("user", user.getUserID());
             session.setMaxInactiveInterval(30*60);  // session expires in 30 minutes
             if (user instanceof Employee) {
-                String path = req.getContextPath() + "/employee/" + user.getUserID();
+                String path = req.getContextPath() + "/employees/" + user.getUserID();
                 System.out.println("Redirecting to: " + path);
                 resp.sendRedirect(path);
                 return;

@@ -41,7 +41,11 @@ public class ManagerServlet extends HttpServlet {
         requestController = new ReimbursementRequestController(requestDAO);
     }
 
-    private int getUserID(HttpServletRequest req, HttpServletResponse resp) {
+    /**
+     * Validate that the manager specified by userID in the url parameters is currently logged in (by comparing with the HTTPSession attribute)
+     * @return the userID of the manager, or -1 if the manager is not logged in or the url is malformed
+     */
+    private int validate(HttpServletRequest req, HttpServletResponse resp) {
         String path = req.getPathInfo();
         String[] params = path.split("/");
         int userID = -1;
@@ -56,6 +60,19 @@ public class ManagerServlet extends HttpServlet {
         }
     }
 
+    /**
+     *  GET requests are used on endpoints:
+     *      /managers/(userID)                                  |   display welcome and options
+     *      /managers/(userID)/employees                        |   display employee options
+     *      /managers/(userID)/employees/(employeeID)           |   display specified employee's profile
+     *      /managers/(userID)/employees/all                    |   display all employees
+     *      /managers/(userID)/requests                         |   display request options
+     *      /managers/(userID)/requests/(requestID)             |   display specified request
+     *      /managers/(userID)/requests/all                     |   display all requests
+     *      /managers/(userID)/requests/pending                 |   display pending requests
+     *      /managers/(userID)/requests/resolved                |   display resolved requests
+     *      /managers/(userID)/requests/employee/(employeeID)   |   display all requests belonging to specified employee
+     */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("doGet called on ManagerServlet with: " + req.getPathInfo());
@@ -64,7 +81,7 @@ public class ManagerServlet extends HttpServlet {
         String[] params = path.split("/");
 
         // validate the user
-        int userID = getUserID(req, resp);
+        int userID = validate(req, resp);
         if (userID < 0) {
             resp.setStatus(403);        // unauthorized
             return;
@@ -198,6 +215,11 @@ public class ManagerServlet extends HttpServlet {
         }
     }
 
+    /**
+     *  POST requests are used on endpoints:
+     *      /managers/(userID)/employees/new                    |   add a new employee
+     *      /managers/(userID)/logout                           |   logout
+     */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("doPost called on ManagerServlet with: " + req.getPathInfo());
@@ -206,7 +228,7 @@ public class ManagerServlet extends HttpServlet {
         String[] params = path.split("/");
 
         // validate the user
-        int userID = getUserID(req, resp);
+        int userID = validate(req, resp);
         if (userID < 0) {
             resp.setStatus(403);        // unauthorized
             return;
@@ -249,6 +271,10 @@ public class ManagerServlet extends HttpServlet {
         }
     }
 
+    /**
+     *  PUT requests are used on endpoints:
+     *      /managers/(userID)/requests/update/(requestID)      |   approve or deny a request
+     */
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("doPut called on ManagerServlet with: " + req.getPathInfo());
@@ -257,7 +283,7 @@ public class ManagerServlet extends HttpServlet {
         String[] params = path.split("/");
 
         // validate the user
-        int userID = getUserID(req, resp);
+        int userID = validate(req, resp);
         if (userID < 0) {
             resp.setStatus(403);        // unauthorized
             return;

@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-@WebServlet("/employee/*")
+@WebServlet("/employees/*")
 public class EmployeeServlet extends HttpServlet {
     private ObjectMapper om;
     private EmployeeController employeeController;
@@ -41,9 +41,12 @@ public class EmployeeServlet extends HttpServlet {
         requestController = new ReimbursementRequestController(requestDAO);
     }
 
-    private int getUserID(HttpServletRequest req, HttpServletResponse resp) {
-        String path = req.getPathInfo();
-        String[] params = path.split("/");
+    /**
+     * Validate that the employee specified by userID in the url parameters is currently logged in (by comparing with the HTTPSession attribute)
+     * @return the userID of the employee, or -1 if the employee is not logged in or the url is malformed
+     */
+    private int validate(HttpServletRequest req, HttpServletResponse resp) {
+        String[] params = req.getPathInfo().split("/");
         int userID = -1;
         try {
             userID = Integer.parseInt(params[1]);
@@ -56,15 +59,24 @@ public class EmployeeServlet extends HttpServlet {
         }
     }
 
+    /**
+     *  GET requests are used on endpoints:
+     *      /employees/(userID)                         |   display welcome and options
+     *      /employees/(userID)/profile                 |   display profile
+     *      /employees/(userID)/requests                |   display request options
+     *      /employees/(userID)/requests/(requestID)    |   display specified request information
+     *      /employees/(userID)/requests/all            |   display all requests
+     *      /employees/(userID)/requests/pending        |   display all pending requests
+     *      /employees/(userID)/requests/resolved       |   display all resolved requests
+     */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("doGet called on EmployeeServlet with: " + req.getPathInfo());
 
-        String path = req.getPathInfo();
-        String[] params = path.split("/");
+        String[] params = req.getPathInfo().split("/");
 
         // validate the user
-        int userID = getUserID(req, resp);
+        int userID = validate(req, resp);
         if (userID < 0) {
             resp.setStatus(403);        // unauthorized
             return;
@@ -73,14 +85,14 @@ public class EmployeeServlet extends HttpServlet {
         // handle the get request
         try {
             if (params.length == 2) {
-                // employee/(userID)
+                // employees/(userID)
 
                 resp.setContentType("text/plain");
                 resp.getWriter().println("Successfully logged in!");
                 resp.getWriter().println("Enter /profile, /update, /requests, or /logout");
                 resp.setStatus(200);
             } else if (params.length == 3 && params[2].equalsIgnoreCase("profile")) {
-                // employee/(userID)/profile
+                // employees/(userID)/profile
 
                 Employee e = employeeController.getProfile(userID);
                 if (e == null) {
@@ -92,7 +104,7 @@ public class EmployeeServlet extends HttpServlet {
                 }
             } else if (params[2].equalsIgnoreCase("requests")) {
                 if (params.length == 3) {
-                    // employee/(userID)/requests
+                    // employees/(userID)/requests
 
                     resp.setContentType("text/plain");
                     resp.getWriter().println("Viewing requests");
@@ -100,7 +112,7 @@ public class EmployeeServlet extends HttpServlet {
                     resp.setStatus(200);
                 } else if (params.length == 4) {
                     if (params[3].equalsIgnoreCase("pending") || params[3].equalsIgnoreCase("resolved") || params[3].equalsIgnoreCase("all")) {
-                        // employee/(userID)/requests/all or employee/(userID)/requests/pending or employee/(userID)/requests/resolved
+                        // employees/(userID)/requests/all or pending or resolved
 
                         List<ReimbursementRequest> requests = null;
                         if (params[3].equalsIgnoreCase("pending")) {
@@ -121,7 +133,7 @@ public class EmployeeServlet extends HttpServlet {
                         }
                     } else {
                         try {
-                            // employee/(userID)/requests/(requestID)
+                            // employees/(userID)/requests/(requestID)
 
                             int requestID = Integer.parseInt(params[3]);
                             ReimbursementRequest r = requestController.viewRequest(requestID);
@@ -149,6 +161,12 @@ public class EmployeeServlet extends HttpServlet {
         }
     }
 
+
+    /**
+     *  POST requests are used on endpoints:
+     *      /employees/(userID)/requests/new            |   submit a new request
+     *      /employees/(userID)/requests/logout         |   logout
+     */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("doPost called on EmployeeServlet with: " + req.getPathInfo());
@@ -157,7 +175,7 @@ public class EmployeeServlet extends HttpServlet {
         String[] params = path.split("/");
 
         // validate the user
-        int userID = getUserID(req, resp);
+        int userID = validate(req, resp);
         if (userID < 0) {
             resp.setStatus(403);        // unauthorized
             return;
@@ -166,14 +184,14 @@ public class EmployeeServlet extends HttpServlet {
         // handle the post request
         try {
             if (params.length == 3 && params[2].equalsIgnoreCase("logout")) {
-                // employee/(userID)/logout
+                // employees/(userID)/logout
 
                 HttpSession session = req.getSession(false);
                 if (session != null) session.invalidate();
                 resp.sendRedirect(req.getContextPath() + "/login");
                 return;
             } else if (params.length == 4 && params[2].equalsIgnoreCase("requests") && params[3].equalsIgnoreCase("new")) {
-                // employee/(userID)/requests/new
+                // employees/(userID)/requests/new
 
                 // Get reimbursement request input
                 ReimbursementRequest reimbRequest = om.readValue(req.getInputStream(), ReimbursementRequest.class);
@@ -198,6 +216,10 @@ public class EmployeeServlet extends HttpServlet {
         }
     }
 
+    /**
+     *  PUT requests are used on endpoints:
+     *      /employees/(userID)/update                  | update profile
+     */
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("doPut called on EmployeeServlet with: " + req.getPathInfo());
@@ -206,7 +228,7 @@ public class EmployeeServlet extends HttpServlet {
         String[] params = path.split("/");
 
         // validate the user
-        int userID = getUserID(req, resp);
+        int userID = validate(req, resp);
         if (userID < 0) {
             resp.setStatus(403);        // unauthorized
             return;
@@ -215,7 +237,7 @@ public class EmployeeServlet extends HttpServlet {
         // handle the put request
         try {
             if (params.length == 3 && params[2].equalsIgnoreCase("update")) {
-                // employee/(userID)/update
+                // employees/(userID)/update
 
                 // Get new profile info
                 Employee updated = om.readValue(req.getInputStream(), Employee.class);
@@ -232,7 +254,7 @@ public class EmployeeServlet extends HttpServlet {
                 } catch (RuntimeException e) {
                     resp.setContentType("plain/text");
                     resp.getWriter().println(e.getMessage());
-                    resp.setStatus(409);        // entered email is not available
+                    resp.setStatus(409);        // input was invalid
                 }
             } else {
                 resp.setStatus(400);
