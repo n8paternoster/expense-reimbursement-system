@@ -7,7 +7,6 @@ import models.users.Manager;
 import models.users.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import services.RequestDAOImplPostgres;
 import services.UserDAO;
 
 import javax.servlet.ServletException;

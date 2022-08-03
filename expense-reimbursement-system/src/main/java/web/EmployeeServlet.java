@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+/**
+ * Servlet to handle actions an authenticated employee can perform
+ */
 @WebServlet("/employees/*")
 public class EmployeeServlet extends HttpServlet {
     private static final Logger log = LogManager.getLogger(EmployeeServlet.class.getName());
@@ -28,10 +31,17 @@ public class EmployeeServlet extends HttpServlet {
     private EmployeeController employeeController;
     private ReimbursementRequestController requestController;
 
+    // classes for JSON serialization/deserialization
     static class ReimbursementInput {
         public String amount;
         public String category;
         public String description;
+    }
+    static class RequestArray {
+        public List<ReimbursementRequest> requests;
+        public RequestArray(List<ReimbursementRequest> requests) {
+            this.requests = requests;
+        }
     }
 
     @Override
@@ -57,9 +67,8 @@ public class EmployeeServlet extends HttpServlet {
      */
     private int validate(HttpServletRequest req, HttpServletResponse resp) {
         String[] params = req.getPathInfo().split("/");
-        int userID = -1;
         try {
-            userID = Integer.parseInt(params[1]);
+            int userID = Integer.parseInt(params[1]);
             HttpSession session = req.getSession(false);
             if (session == null || session.getAttribute("user") == null || (int) session.getAttribute("user") != userID)
                 return -1;
@@ -140,9 +149,8 @@ public class EmployeeServlet extends HttpServlet {
                         } else {
                             log.debug("Retrieved reimbursement requests for an employee");
                             resp.setContentType("application/json");
-                            for (ReimbursementRequest r : requests) {
-                                resp.getWriter().write(om.writeValueAsString(r));
-                            }
+                            RequestArray arr = new RequestArray(requests);
+                            resp.getWriter().write(om.writeValueAsString(arr));
                             resp.setStatus(200);    // reimbursement requests found
                         }
                     } else {

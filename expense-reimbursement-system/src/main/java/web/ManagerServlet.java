@@ -21,12 +21,29 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+/**
+ * Servlet to actions an authenticated manager can perform
+ */
 @WebServlet("/managers/*")
 public class ManagerServlet extends HttpServlet {
     private static final Logger log = LogManager.getLogger(ManagerServlet.class.getName());
-    private ObjectMapper om;
-    private ManagerController managerController;
-    private ReimbursementRequestController requestController;
+    protected ObjectMapper om;
+    protected ManagerController managerController;
+    protected ReimbursementRequestController requestController;
+
+    // classes for serializing arrays
+    public static class EmployeeArray {
+        public List<Employee> employees;
+        public EmployeeArray(List<Employee> employees) {
+            this.employees = employees;
+        }
+    }
+    public static class RequestArray {
+        public List<ReimbursementRequest> requests;
+        public RequestArray(List<ReimbursementRequest> requests) {
+            this.requests = requests;
+        }
+    }
 
     @Override
     public void init() {
@@ -50,11 +67,9 @@ public class ManagerServlet extends HttpServlet {
      * @return the userID of the manager, or -1 if the manager is not logged in or the url is malformed
      */
     private int validate(HttpServletRequest req, HttpServletResponse resp) {
-        String path = req.getPathInfo();
-        String[] params = path.split("/");
-        int userID = -1;
+        String[] params = req.getPathInfo().split("/");
         try {
-            userID = Integer.parseInt(params[1]);
+            int userID = Integer.parseInt(params[1]);
             HttpSession session = req.getSession(false);
             if (session == null || session.getAttribute("user") == null || (int) session.getAttribute("user") != userID)
                 return -1;
@@ -119,9 +134,8 @@ public class ManagerServlet extends HttpServlet {
                         } else {
                             log.debug("Retrieved all employees for an authorized manager");
                             resp.setContentType("application/json");
-                            for (Employee e : employees) {
-                                resp.getWriter().write(om.writeValueAsString(e));
-                            }
+                            EmployeeArray arr = new EmployeeArray(employees);
+                            resp.getWriter().write(om.writeValueAsString(arr));
                             resp.setStatus(200);    // employees found
                         }
                     } else {
@@ -174,9 +188,8 @@ public class ManagerServlet extends HttpServlet {
                         } else {
                             log.debug("Retrieved reimbursement requests for an employee");
                             resp.setContentType("application/json");
-                            for (ReimbursementRequest r : requests) {
-                                resp.getWriter().write(om.writeValueAsString(r));
-                            }
+                            RequestArray arr = new RequestArray(requests);
+                            resp.getWriter().write(om.writeValueAsString(arr));
                             resp.setStatus(200);    // reimbursement requests found
                         }
                     } else {
@@ -211,9 +224,11 @@ public class ManagerServlet extends HttpServlet {
                         } else {
                             log.debug("Retrieved an employee's reimbursement requests for a manager");
                             resp.setContentType("application/json");
-                            for (ReimbursementRequest r : requests) {
-                                resp.getWriter().write(om.writeValueAsString(r));
-                            }
+                            RequestArray arr = new RequestArray(requests);
+                            resp.getWriter().write(om.writeValueAsString(arr));
+//                            for (ReimbursementRequest r : requests) {
+//                                resp.getWriter().write(om.writeValueAsString(r));
+//                            }
                             resp.setStatus(200);        // reimbursement requests found
                         }
                     } catch (NumberFormatException e) {
