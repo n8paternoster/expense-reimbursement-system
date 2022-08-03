@@ -6,6 +6,8 @@ import controllers.EmployeeController;
 import controllers.ReimbursementRequestController;
 import models.requests.ReimbursementRequest;
 import models.users.Employee;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import services.RequestDAO;
 import services.UserDAO;
 
@@ -21,9 +23,16 @@ import java.util.List;
 
 @WebServlet("/employees/*")
 public class EmployeeServlet extends HttpServlet {
+    private static final Logger log = LogManager.getLogger(EmployeeServlet.class.getName());
     private ObjectMapper om;
     private EmployeeController employeeController;
     private ReimbursementRequestController requestController;
+
+    static class ReimbursementInput {
+        public String amount;
+        public String category;
+        public String description;
+    }
 
     @Override
     public void init() throws ServletException {
@@ -39,6 +48,7 @@ public class EmployeeServlet extends HttpServlet {
         RequestDAO requestDAO = (RequestDAO) getServletContext().getAttribute("requestDAO");
         employeeController = new EmployeeController(userDao);
         requestController = new ReimbursementRequestController(requestDAO);
+        log.debug("EmployeeServlet initialized");
     }
 
     /**
@@ -71,13 +81,14 @@ public class EmployeeServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("doGet called on EmployeeServlet with: " + req.getPathInfo());
+        log.debug("EmployeeServlet doGet called with: " + req.getPathInfo());
 
         String[] params = req.getPathInfo().split("/");
 
         // validate the user
         int userID = validate(req, resp);
         if (userID < 0) {
+            log.info("Unauthorized request made to EmployeeServlet doGet with " + req.getPathInfo());
             resp.setStatus(403);        // unauthorized
             return;
         }
@@ -96,6 +107,7 @@ public class EmployeeServlet extends HttpServlet {
 
                 Employee e = employeeController.getProfile(userID);
                 if (e == null) {
+                    log.warn("Failed to retrieve profile information for an authorized employee");
                     resp.setStatus(404);    // employee profile not found
                 } else {
                     resp.setContentType("application/json");
@@ -123,8 +135,10 @@ public class EmployeeServlet extends HttpServlet {
                             requests = requestController.viewRequests(userID);
                         }
                         if (requests == null) {
+                            log.warn("Failed to retrieve reimbursement requests for an authorized employee");
                             resp.setStatus(404);    // reimbursement requests not found
                         } else {
+                            log.debug("Retrieved reimbursement requests for an employee");
                             resp.setContentType("application/json");
                             for (ReimbursementRequest r : requests) {
                                 resp.getWriter().write(om.writeValueAsString(r));
@@ -138,26 +152,33 @@ public class EmployeeServlet extends HttpServlet {
                             int requestID = Integer.parseInt(params[3]);
                             ReimbursementRequest r = requestController.viewRequest(requestID);
                             if (r == null) {
+                                log.debug("The reimbursement request with id '" + requestID + "' was not found");
                                 resp.setStatus(404);    // reimbursement request not found
                             } else if (r.getSubmitterID() != userID) {
+                                log.info("Authorized user requested a reimbursement request belonging to another user");
                                 resp.setStatus(403);    // reimbursement request does not belong to this user
                             } else {
+                                log.debug("Retrieved a reimbursement request for an employee");
                                 resp.setContentType("application/json");
                                 resp.getWriter().write(om.writeValueAsString(r));
                                 resp.setStatus(200);    // reimbursement request found
                             }
                         } catch (NumberFormatException e) {
+                            log.info("An invalid request was made for a reimbursement request with specified id '" + params[3] + "'");
                             resp.setStatus(400);
                         }
                     }
                 } else {
+                    log.info("A GET request was made with too many parameters");
                     resp.setStatus(400);
                 }
             } else {
+                log.info("An invalid GET request was made");
                 resp.setStatus(400);
             }
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
-            resp.setStatus(400);    // invalid request
+            log.info("An invalid GET request was made");
+            resp.setStatus(400);
         }
     }
 
@@ -169,14 +190,14 @@ public class EmployeeServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("doPost called on EmployeeServlet with: " + req.getPathInfo());
+        log.debug("EmployeeServlet doPost called with: " + req.getPathInfo());
 
-        String path = req.getPathInfo();
-        String[] params = path.split("/");
+        String[] params = req.getPathInfo().split("/");
 
         // validate the user
         int userID = validate(req, resp);
         if (userID < 0) {
+            log.info("Unauthorized request made to EmployeeServlet doPost with " + req.getPathInfo());
             resp.setStatus(403);        // unauthorized
             return;
         }
@@ -186,6 +207,7 @@ public class EmployeeServlet extends HttpServlet {
             if (params.length == 3 && params[2].equalsIgnoreCase("logout")) {
                 // employees/(userID)/logout
 
+                log.debug("Employee logged out, redirecting to /login");
                 HttpSession session = req.getSession(false);
                 if (session != null) session.invalidate();
                 resp.sendRedirect(req.getContextPath() + "/login");
@@ -194,24 +216,35 @@ public class EmployeeServlet extends HttpServlet {
                 // employees/(userID)/requests/new
 
                 // Get reimbursement request input
-                ReimbursementRequest reimbRequest = om.readValue(req.getInputStream(), ReimbursementRequest.class);
-                System.out.println(reimbRequest.getAmount());
-                System.out.println(reimbRequest.getCategory());
-                System.out.println(reimbRequest.getDescription());
+                ReimbursementInput input = om.readValue(req.getInputStream(), ReimbursementInput.class);
+                System.out.println(input.amount);
+                System.out.println(input.category);
+                System.out.println(input.description);
 
-                int requestID = requestController.submitNewRequest(userID, reimbRequest.getAmount(), reimbRequest.getCategory(), reimbRequest.getDescription());
-                if (requestID < 0) {
-                    resp.setStatus(400);    // failed to add new request
-                } else {
-                    ReimbursementRequest request = requestController.viewRequest(requestID);
-                    resp.setContentType("application/json");
-                    resp.getWriter().write(om.writeValueAsString(request));
-                    resp.setStatus(201);    // new request added successfully
+                try {
+                    int requestID = requestController.submitNewRequest(userID, input.amount, input.category, input.description);
+                    if (requestID < 0) {
+                        log.warn("Failed to add a valid new request");
+                        resp.setStatus(400);    // failed to add new request
+                    } else {
+                        log.info("Successfully added a new request");
+                        ReimbursementRequest request = requestController.viewRequest(requestID);
+                        resp.setContentType("application/json");
+                        resp.getWriter().write(om.writeValueAsString(request));
+                        resp.setStatus(201);    // new request added successfully
+                    }
+                } catch (RuntimeException e) {
+                    log.info("An invalid reimbursement request was not added");
+                    resp.setContentType("plain/text");
+                    resp.getWriter().println(e.getMessage());
+                    resp.setStatus(409);    // input was invalid
                 }
             } else {
+                log.info("An invalid POST request was made");
                 resp.setStatus(400);
             }
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
+            log.info("An invalid POST request was made");
             resp.setStatus(400);    // invalid request
         }
     }
@@ -222,14 +255,14 @@ public class EmployeeServlet extends HttpServlet {
      */
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("doPut called on EmployeeServlet with: " + req.getPathInfo());
+        log.debug("EmployeeServlet doPut called with: " + req.getPathInfo());
 
-        String path = req.getPathInfo();
-        String[] params = path.split("/");
+        String[] params = req.getPathInfo().split("/");
 
         // validate the user
         int userID = validate(req, resp);
         if (userID < 0) {
+            log.info("Unauthorized request made to EmployeeServlet doPut with " + req.getPathInfo());
             resp.setStatus(403);        // unauthorized
             return;
         }
@@ -244,22 +277,27 @@ public class EmployeeServlet extends HttpServlet {
                 try {
                     boolean success = employeeController.updateProfile(userID, updated.getPassword(), updated.getFirstName(), updated.getLastName(), updated.getDob(), updated.getEmail());
                     if (success) {
+                        log.debug("Employee profile successfully updated");
                         Employee e = employeeController.getProfile(userID);
                         resp.setContentType("application/json");
                         resp.getWriter().write(om.writeValueAsString(e));
                         resp.setStatus(200);    // profile was successfully updated
                     } else {
+                        log.warn("Failed to update employee profile");
                         resp.setStatus(400);    // profile was not updated
                     }
                 } catch (RuntimeException e) {
+                    log.info("Invalid values provided when updating employee profile");
                     resp.setContentType("plain/text");
                     resp.getWriter().println(e.getMessage());
                     resp.setStatus(409);        // input was invalid
                 }
             } else {
+                log.info("An invalid PUT request was made");
                 resp.setStatus(400);
             }
-        } catch (IndexOutOfBoundsException | NumberFormatException e) {
+        } catch (IndexOutOfBoundsException | IOException e) {
+            log.info("An invalid PUT request was made");
             resp.setStatus(400);    // invalid request
         }
     }

@@ -34,4 +34,4 @@ select requestID, submitterID, resolverID, amount, timeSubmitted, category, desc
 select requestID, submitterID, resolverID, amount, timeSubmitted, category, description, status from requests order by timeSubmitted desc;
 
 update users set password='newpassword', firstName='Java', lastName='Enterprise', email='newemail@java.com', dob='1999-12-31 00:00:00' where userID=1000000;
-update requests set status='Denied' where requestID=2;
+update requests set status='Denied', resolverID=123 where requestID=1;

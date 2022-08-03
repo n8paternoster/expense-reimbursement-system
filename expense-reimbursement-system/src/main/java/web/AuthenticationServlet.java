@@ -5,6 +5,9 @@ import controllers.UserController;
 import models.users.Employee;
 import models.users.Manager;
 import models.users.User;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import services.RequestDAOImplPostgres;
 import services.UserDAO;
 
 import javax.servlet.ServletException;
@@ -20,14 +23,21 @@ import java.io.IOException;
  */
 @WebServlet("/login")
 public class AuthenticationServlet extends HttpServlet {
+    private static final Logger log = LogManager.getLogger(AuthenticationServlet.class.getName());
     private ObjectMapper om;
     private UserController userController;
+
+    static class LoginRequest {
+        public int userID;
+        public String password;
+    }
 
     @Override
     public void init() throws ServletException {
         om = new ObjectMapper();
         UserDAO userDao = (UserDAO) getServletContext().getAttribute("userDAO");
         userController = new UserController(userDao);
+        log.debug("AuthenticationServlet initialized");
     }
 
     /**
@@ -35,9 +45,9 @@ public class AuthenticationServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("doGet called on LoginServlet with: " + req.getPathInfo());
         resp.setContentType("plain/text");
         resp.getWriter().println("Please input your employeeID and password");
+        log.debug("AuthenticationServlet doGet called");
     }
 
     /**
@@ -50,7 +60,7 @@ public class AuthenticationServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("doPost called on LoginServlet with: " + req.getPathInfo());
+        log.debug("AuthenticationServlet doPost called with: " + req.getPathInfo());
 
         // Get client login input
         LoginRequest loginRequest = om.readValue(req.getInputStream(), LoginRequest.class);
@@ -58,53 +68,33 @@ public class AuthenticationServlet extends HttpServlet {
         // Authenticate login
         HttpSession session = req.getSession(false);
         if (session != null) session.invalidate();
-        User user = userController.login(loginRequest.getUserID(), loginRequest.getPassword());
+        User user = userController.login(loginRequest.userID, loginRequest.password);
         if (user != null) {
             session = req.getSession();
             session.setAttribute("user", user.getUserID());
             session.setMaxInactiveInterval(30*60);  // session expires in 30 minutes
             if (user instanceof Employee) {
                 String path = req.getContextPath() + "/employees/" + user.getUserID();
-                System.out.println("Redirecting to: " + path);
+                log.info("Employee authentication succeeded, redirecting to " + path);
                 resp.sendRedirect(path);
                 return;
             } else if (user instanceof Manager) {
                 String path = req.getContextPath() + "/managers/" + user.getUserID();
-                System.out.println("Redirecting to " + path);
+                log.info("Manager authentication succeeded, redirecting to " + path);
                 resp.sendRedirect(path);
                 return;
             } else {
                 session.invalidate();
+                log.warn("Authentication succeeded for an unknown user type");
                 resp.setContentType("plain/text");
                 resp.getWriter().println("Invalid user type");
                 resp.setStatus(500);    // authenticated user is not a recognized type
             }
         } else {
+            log.info("Authentication attempt failed");
             resp.setContentType("plain/text");
             resp.getWriter().println("Invalid username or password entered");
             resp.setStatus(401);        // invalid login credentials
         }
-    }
-}
-
-class LoginRequest {
-    private int userID;
-    private String password;
-    public LoginRequest() { }
-    public LoginRequest(int userID, String password) {
-        this.userID = userID;
-        this.password = password;
-    }
-    public int getUserID() {
-        return userID;
-    }
-    public void setUserID(int userID) {
-        this.userID = userID;
-    }
-    public String getPassword() {
-        return password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
     }
 }

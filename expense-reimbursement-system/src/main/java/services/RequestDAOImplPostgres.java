@@ -27,8 +27,8 @@ public class RequestDAOImplPostgres implements RequestDAO {
     @Override
     public int addRequest(ReimbursementRequest r) {
         String sql =
-                "insert into requests (submitterID, resolverID, amount, timeSubmitted, category, description, status) " +
-                "values (?, ?, ?, ?, ?, ?, ?) returning requestID;";
+                "insert into requests (submitterID, resolverID, amount, timeSubmitted, timeResolved, category, description, status) " +
+                "values (?, ?, ?, ?, ?, ?, ?, ?) returning requestID;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS))
         {
@@ -37,10 +37,13 @@ public class RequestDAOImplPostgres implements RequestDAO {
             if (r.getResolverID() > 0) ps.setInt(2, r.getResolverID());
             else ps.setNull(2, Types.NULL);
             ps.setLong(3, r.getAmount());
-            ps.setTimestamp(4, Timestamp.valueOf(r.getTimeSubmitted()));
-            ps.setString(5, r.getCategory());
-            ps.setString(6, r.getDescription());
-            ps.setString(7, r.getStatus());
+            if (r.getTimeSubmitted() == null) ps.setNull(4, Types.NULL);
+            else ps.setTimestamp(4, Timestamp.valueOf(r.getTimeSubmitted()));
+            if (r.getTimeResolved() == null) ps.setNull(5, Types.NULL);
+            else ps.setTimestamp(5, Timestamp.valueOf(r.getTimeResolved()));
+            ps.setString(6, r.getCategory());
+            ps.setString(7, r.getDescription());
+            ps.setString(8, r.getStatus());
             log.debug("Attempting database insert for new reimbursement request");
             ps.executeUpdate();
 
@@ -59,19 +62,22 @@ public class RequestDAOImplPostgres implements RequestDAO {
 
     /**
      * Update a request's status
+     * @param resolverID The user id of the user resolving the request
      * @param requestID The reimbursement request's id
      * @param resolution The updated status
      * @return True if the request was successfully updated, false otherwise
      */
     @Override
-    public boolean resolveRequest(int requestID, String resolution) {
-        String sql = "update requests set status=? where requestID=?;";
+    public boolean resolveRequest(int resolverID, int requestID, String resolution) {
+        String sql = "update requests set status=?, resolverID=?, timeResolved=? where requestID=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql))
         {
             connection.setAutoCommit(false);
             ps.setString(1, resolution);
-            ps.setInt(2, requestID);
+            ps.setInt(2, resolverID);
+            ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(4, requestID);
             log.debug("Attempting database update for a request's status");
             int rows = ps.executeUpdate();
             connection.commit();
@@ -90,7 +96,7 @@ public class RequestDAOImplPostgres implements RequestDAO {
      */
     @Override
     public ReimbursementRequest getRequest(int requestID) {
-        String sql = "select submitterID, resolverID, amount, timeSubmitted, category, description, status from requests where requestID=?;";
+        String sql = "select submitterID, resolverID, amount, timeSubmitted, timeResolved, category, description, status from requests where requestID=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql))
         {
@@ -106,11 +112,13 @@ public class RequestDAOImplPostgres implements RequestDAO {
                 long amount = rs.getLong("amount");
                 Timestamp ts = rs.getTimestamp("timeSubmitted");
                 LocalDateTime timeSubmitted = (ts != null) ? ts.toLocalDateTime() : null;
+                Timestamp ts2 = rs.getTimestamp("timeResolved");
+                LocalDateTime timeResolved = (ts2 != null) ? ts2.toLocalDateTime() : null;
                 String category = rs.getString("category");
                 String description = rs.getString("description");
                 String status = rs.getString("status");
                 log.debug("Database query found a reimbursement request");
-                return new ReimbursementRequest(requestID, submitterID, resolverID, amount, category, description, timeSubmitted, status);
+                return new ReimbursementRequest(requestID, submitterID, resolverID, amount, category, description, timeSubmitted, timeResolved, status);
             }
         } catch (SQLException e) {
             log.error("Database query failed");
@@ -143,7 +151,7 @@ public class RequestDAOImplPostgres implements RequestDAO {
             }
         }
         String sql =
-                "select requestID, submitterID, resolverID, amount, timeSubmitted, category, description, status from requests" +
+                "select requestID, submitterID, resolverID, amount, timeSubmitted, timeResolved, category, description, status from requests" +
                         whereClause + "order by timeSubmitted desc;";
         List<ReimbursementRequest> requests = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
@@ -161,11 +169,13 @@ public class RequestDAOImplPostgres implements RequestDAO {
                 long amount = rs.getLong("amount");
                 Timestamp ts = rs.getTimestamp("timeSubmitted");
                 LocalDateTime timeSubmitted = (ts != null) ? ts.toLocalDateTime() : null;
+                Timestamp ts2 = rs.getTimestamp("timeResolved");
+                LocalDateTime timeResolved = (ts2 != null) ? ts2.toLocalDateTime() : null;
                 String category = rs.getString("category");
                 String description = rs.getString("description");
                 String status = rs.getString("status");
                 log.debug("Database query found a reimbursement request");
-                requests.add(new ReimbursementRequest(requestID, submitterID, resolverID, amount, category, description, timeSubmitted, status));
+                requests.add(new ReimbursementRequest(requestID, submitterID, resolverID, amount, category, description, timeSubmitted, timeResolved, status));
             }
         } catch (SQLException e) {
             log.error("Database query failed");

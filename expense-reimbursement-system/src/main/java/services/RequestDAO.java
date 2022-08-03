@@ -8,7 +8,7 @@ public interface RequestDAO {
 
     // insert/update
     int addRequest(ReimbursementRequest r);
-    boolean resolveRequest(int requestID, String resolution);
+    boolean resolveRequest(int resolverID, int requestID, String resolution);
 
     // get
     ReimbursementRequest getRequest(int requestID);

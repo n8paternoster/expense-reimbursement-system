@@ -37,6 +37,7 @@ public class RequestDAOImplPostgresTest {
                 "Food",
                 "Test description",
                 LocalDateTime.now(),
+                LocalDateTime.now(),
                 "Pending");
         Mockito.when(con.prepareStatement(Mockito.anyString())).thenReturn(ps);
         Mockito.when(con.prepareStatement(Mockito.anyString(), Mockito.anyInt())).thenReturn(ps);
@@ -50,6 +51,7 @@ public class RequestDAOImplPostgresTest {
         Mockito.when(rs.getInt("resolverID")).thenReturn(testRequest.getResolverID());
         Mockito.when(rs.getLong("amount")).thenReturn(testRequest.getAmount());
         Mockito.when(rs.getTimestamp("timeSubmitted")).thenReturn(Timestamp.valueOf(testRequest.getTimeSubmitted()));
+        Mockito.when(rs.getTimestamp("timeResolved")).thenReturn(Timestamp.valueOf(testRequest.getTimeResolved()));
         Mockito.when(rs.getString("category")).thenReturn(testRequest.getCategory());
         Mockito.when(rs.getString("description")).thenReturn(testRequest.getDescription());
         Mockito.when(rs.getString("status")).thenReturn(testRequest.getStatus());
@@ -163,8 +165,8 @@ public class RequestDAOImplPostgresTest {
 
     @Test
     public void testResolveRequest() throws SQLException {
-        assertTrue(dao.resolveRequest(123, "Approved"));
+        assertTrue(dao.resolveRequest(123, 45,"Approved"));
         Mockito.when(ps.executeUpdate()).thenThrow(SQLException.class);
-        assertFalse(dao.resolveRequest(123, "Approved"));
+        assertFalse(dao.resolveRequest(123, 45,"Approved"));
     }
 }

@@ -6,6 +6,8 @@ import controllers.ManagerController;
 import controllers.ReimbursementRequestController;
 import models.requests.ReimbursementRequest;
 import models.users.Employee;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import services.RequestDAO;
 import services.UserDAO;
 
@@ -21,6 +23,7 @@ import java.util.List;
 
 @WebServlet("/managers/*")
 public class ManagerServlet extends HttpServlet {
+    private static final Logger log = LogManager.getLogger(ManagerServlet.class.getName());
     private ObjectMapper om;
     private ManagerController managerController;
     private ReimbursementRequestController requestController;
@@ -39,6 +42,7 @@ public class ManagerServlet extends HttpServlet {
         RequestDAO requestDAO = (RequestDAO) getServletContext().getAttribute("requestDAO");
         managerController = new ManagerController(userDao);
         requestController = new ReimbursementRequestController(requestDAO);
+        log.debug("ManagerServlet initialized");
     }
 
     /**
@@ -75,14 +79,14 @@ public class ManagerServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("doGet called on ManagerServlet with: " + req.getPathInfo());
+        log.debug("ManagerServlet doGet called with: " + req.getPathInfo());
 
-        String path = req.getPathInfo();
-        String[] params = path.split("/");
+        String[] params = req.getPathInfo().split("/");
 
         // validate the user
         int userID = validate(req, resp);
         if (userID < 0) {
+            log.info("Unauthorized request made to ManagerServlet doGet with " + req.getPathInfo());
             resp.setStatus(403);        // unauthorized
             return;
         }
@@ -108,12 +112,12 @@ public class ManagerServlet extends HttpServlet {
                     if (params[3].equalsIgnoreCase("all")) {
                         // manager/(userID)/employees/all
 
-                        System.out.println("Calling viewAllEmployees on managerController");
                         List<Employee> employees = managerController.viewAllEmployees();
-                        System.out.println("viewAllEmployees returned");
                         if (employees == null) {
+                            log.warn("Failed to retrieve all employees for an authorized manager");
                             resp.setStatus(404);    // employees not found
                         } else {
+                            log.debug("Retrieved all employees for an authorized manager");
                             resp.setContentType("application/json");
                             for (Employee e : employees) {
                                 resp.getWriter().write(om.writeValueAsString(e));
@@ -127,17 +131,21 @@ public class ManagerServlet extends HttpServlet {
                             int employeeID = Integer.parseInt(params[3]);
                             Employee e = managerController.viewEmployee(employeeID);
                             if (e == null) {
+                                log.debug("Employee with id '" + employeeID + "' was not found");
                                 resp.setStatus(404);    // employee not found
                             } else {
+                                log.debug("Retrieved an employee's profile for a manager");
                                 resp.setContentType("application/json");
                                 resp.getWriter().write(om.writeValueAsString(e));
                                 resp.setStatus(200);    // employee found
                             }
                         } catch (NumberFormatException e) {
+                            log.info("An invalid request was made for an employee profile with specified id '" + params[3] + "'");
                             resp.setStatus(400);        // invalid employeeID entered
                         }
                     }
                 } else {
+                    log.info("A GET request was made with too many parameters");
                     resp.setStatus(400);
                 }
             } else if (params[2].equalsIgnoreCase("requests")) {
@@ -161,8 +169,10 @@ public class ManagerServlet extends HttpServlet {
                             requests = requestController.viewAllRequests();
                         }
                         if (requests == null) {
+                            log.warn("Failed to retrieve requests for an authorized manager");
                             resp.setStatus(404);    // reimbursement requests not found
                         } else {
+                            log.debug("Retrieved reimbursement requests for an employee");
                             resp.setContentType("application/json");
                             for (ReimbursementRequest r : requests) {
                                 resp.getWriter().write(om.writeValueAsString(r));
@@ -176,13 +186,16 @@ public class ManagerServlet extends HttpServlet {
                             int requestID = Integer.parseInt(params[3]);
                             ReimbursementRequest r = requestController.viewRequest(requestID);
                             if (r == null) {
+                                log.debug("The reimbursement request with id '" + requestID + "' was not found");
                                 resp.setStatus(404);    // reimbursement request not found
                             } else {
+                                log.debug("Retrieved a reimbursement request for a manager");
                                 resp.setContentType("application/json");
                                 resp.getWriter().write(om.writeValueAsString(r));
                                 resp.setStatus(200);    // reimbursement request found
                             }
                         } catch (NumberFormatException e) {
+                            log.info("An invalid request was made for a reimbursement request with specified id '" + params[3] + "'");
                             resp.setStatus(400);        // invalid requestID entered
                         }
                     }
@@ -193,8 +206,10 @@ public class ManagerServlet extends HttpServlet {
                         int employeeID = Integer.parseInt(params[4]);
                         List<ReimbursementRequest> requests = requestController.viewRequests(employeeID);
                         if (requests == null) {
+                            log.warn("Failed to retrieve an employee's reimbursement requests for an authorized manager");
                             resp.setStatus(404);        // reimbursement requests not found
                         } else {
+                            log.debug("Retrieved an employee's reimbursement requests for a manager");
                             resp.setContentType("application/json");
                             for (ReimbursementRequest r : requests) {
                                 resp.getWriter().write(om.writeValueAsString(r));
@@ -202,15 +217,19 @@ public class ManagerServlet extends HttpServlet {
                             resp.setStatus(200);        // reimbursement requests found
                         }
                     } catch (NumberFormatException e) {
+                        log.info("An invalid request was made for an employee's reimbursement requests with the specified employee id '" + params[4] + "'");
                         resp.setStatus(400);        // invalid employeeID entered
                     }
                 } else {
-                    resp.setStatus(400);    // invalid get request url (too many parameters)
+                    log.info("A GET request was made with too many parameters");
+                    resp.setStatus(400);
                 }
             } else {
-                resp.setStatus(400);    // invalid get request url (parameter not recognized)
+                log.info("An invalid GET request was made");
+                resp.setStatus(400);
             }
         } catch (IndexOutOfBoundsException e) {
+            log.info("An invalid GET request was made");
             resp.setStatus(400);    // invalid get request url
         }
     }
@@ -222,14 +241,14 @@ public class ManagerServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("doPost called on ManagerServlet with: " + req.getPathInfo());
+        log.debug("ManagerServlet doPost called with: " + req.getPathInfo());
 
-        String path = req.getPathInfo();
-        String[] params = path.split("/");
+        String[] params = req.getPathInfo().split("/");
 
         // validate the user
         int userID = validate(req, resp);
         if (userID < 0) {
+            log.info("Unauthorized request made to ManagerServlet doPost with " + req.getPathInfo());
             resp.setStatus(403);        // unauthorized
             return;
         }
@@ -239,6 +258,7 @@ public class ManagerServlet extends HttpServlet {
             if (params.length == 3 && params[2].equalsIgnoreCase("logout")) {
                 // manager/(userID)/logout
 
+                log.debug("Manager logged out, redirecting to /login");
                 HttpSession session = req.getSession(false);
                 if (session != null) session.invalidate();
                 resp.sendRedirect(req.getContextPath() + "/login");
@@ -251,22 +271,27 @@ public class ManagerServlet extends HttpServlet {
                 try {
                     int employeeID = managerController.addNewEmployee(e.getPassword(), e.getFirstName(), e.getLastName(), e.getDob(), e.getEmail());
                     if (employeeID < 1) {
+                        log.warn("Failed to add a valid new employee");
                         resp.setStatus(500);    // failed to add the new employee
                     } else {
+                        log.info("Successfully added a new employee");
                         Employee newEmployee = managerController.viewEmployee(employeeID);
                         resp.setContentType("application/json");
                         resp.getWriter().write(om.writeValueAsString(newEmployee));
                         resp.setStatus(200);    // successfully added the new employee
                     }
                 } catch (RuntimeException ex) {
+                    log.info("An invalid employee profile was not added");
                     resp.setContentType("plain/text");
                     resp.getWriter().println(ex.getMessage());
                     resp.setStatus(409);        // entered email is not available
                 }
             } else {
+                log.info("An invalid POST request was made");
                 resp.setStatus(400);    // invalid post request url
             }
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
+            log.info("An invalid POST request was made");
             resp.setStatus(400);    // invalid post request url
         }
     }
@@ -277,14 +302,14 @@ public class ManagerServlet extends HttpServlet {
      */
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("doPut called on ManagerServlet with: " + req.getPathInfo());
+        log.debug("ManagerServlet doPut called with: " + req.getPathInfo());
 
-        String path = req.getPathInfo();
-        String[] params = path.split("/");
+        String[] params = req.getPathInfo().split("/");
 
         // validate the user
         int userID = validate(req, resp);
         if (userID < 0) {
+            log.info("Unauthorized request made to ManagerServlet doPut with " + req.getPathInfo());
             resp.setStatus(403);        // unauthorized
             return;
         }
@@ -298,37 +323,41 @@ public class ManagerServlet extends HttpServlet {
                     int requestID = Integer.parseInt(params[4]);
                     ReimbursementRequest r = requestController.viewRequest(requestID);
                     if (r == null) {
+                        log.debug("The reimbursement request with id '" + requestID + "' was not found");
                         resp.setStatus(404);    // request not found
                     } else if (!r.getStatus().equalsIgnoreCase("Pending")) {
+                        log.info("An attempt was made to resolve a reimbursement request that has already been resolved");
                         resp.setContentType("plain/text");
                         resp.getWriter().println("The specified request has already been resolved");
                         resp.setStatus(409);    // request has already been resolved
                     } else {
-                        String resolution = om.readValue(req.getInputStream(), String.class);
-                        if (resolution.equalsIgnoreCase("Approved") || resolution.equalsIgnoreCase("Denied")) {
-                            if (resolution.equalsIgnoreCase("Approved")) resolution = "Approved";
-                            else resolution = "Denied";
-                            if (requestController.resolveRequest(requestID, resolution)) {
+                        try {
+                            boolean resolution = om.readValue(req.getInputStream(), boolean.class);
+                            if (requestController.resolveRequest(userID, requestID, resolution)) {
+                                log.debug("Reimbursement request successfully resolved");
                                 ReimbursementRequest updated = requestController.viewRequest(requestID);
                                 resp.setContentType("application/json");
                                 resp.getWriter().write(om.writeValueAsString(updated));
                                 resp.setStatus(200);    // successfully updated the reimbursement request status
                             } else {
+                                log.warn("Failed to update a reimbursement request");
                                 resp.setStatus(500);    // failed to update the reimbursement request status
                             }
-                        } else {
-                            resp.setContentType("plain/text");
-                            resp.getWriter().println("You must enter 'Approved' or 'Denied'");
-                            resp.setStatus(400);        // invalid status entered
+                        } catch (IOException e) {
+                            log.info("Attempted to resolve a reimbursement request with a non-boolean value");
+                            resp.setStatus(400);    // invalid input
                         }
                     }
                 } catch (NumberFormatException e) {
+                    log.info("An invalid request was made for a reimbursement request with specified id '" + params[3] + "'");
                     resp.setStatus(400);    // invalid requestID entered
                 }
             } else {
+                log.info("An invalid PUT request was made");
                 resp.setStatus(400);        // invalid put request url
             }
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
+            log.info("An invalid PUT request was made");
             resp.setStatus(400);    // invalid put request url
         }
     }
