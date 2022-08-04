@@ -1,4 +1,5 @@
-com.nathanpaternoster.controllers
+com.nathanpaternoster.controllers.requests
+com.nathanpaternoster.controllers.users
 com.nathanpaternoster.models.requests
 com.nathanpaternoster.models.users
 com.nathanpaternoster.services

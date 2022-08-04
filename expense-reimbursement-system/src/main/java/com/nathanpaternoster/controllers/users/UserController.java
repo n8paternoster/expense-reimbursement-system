@@ -1,4 +1,4 @@
-package com.nathanpaternoster.controllers;
+package com.nathanpaternoster.controllers.users;
 
 import com.nathanpaternoster.models.users.User;
 import com.nathanpaternoster.services.UserDAO;

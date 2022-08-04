@@ -1,6 +1,5 @@
-package com.nathanpaternoster.controllers;
+package com.nathanpaternoster.controllers.requests;
 
-import com.nathanpaternoster.controllers.ReimbursementRequestController;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,12 +1,17 @@
 package com.nathanpaternoster.models.users;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nathanpaternoster.models.requests.ReimbursementRequest;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+/**
+ * Class to represent an ERS employee
+ */
 public class Employee extends User {
     private String email;
+    @JsonIgnore
     private ArrayList<ReimbursementRequest> requests;
 
     public Employee() {

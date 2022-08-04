@@ -1,7 +1,7 @@
 package com.nathanpaternoster.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nathanpaternoster.controllers.UserController;
+import com.nathanpaternoster.controllers.users.UserController;
 import com.nathanpaternoster.models.users.Employee;
 import com.nathanpaternoster.models.users.Manager;
 import com.nathanpaternoster.models.users.User;

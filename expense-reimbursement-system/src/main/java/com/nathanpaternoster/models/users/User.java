@@ -2,6 +2,9 @@ package com.nathanpaternoster.models.users;
 
 import java.time.LocalDate;
 
+/**
+ * Base class to represent an ERS user, login credentials are a userID and password
+ */
 public abstract class User {
     private int userID;
     private String password;

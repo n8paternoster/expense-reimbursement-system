@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
+/**
+ * Class to represent a reimbursement request
+ */
 public class ReimbursementRequest {
     private int requestID;
     private int submitterID;

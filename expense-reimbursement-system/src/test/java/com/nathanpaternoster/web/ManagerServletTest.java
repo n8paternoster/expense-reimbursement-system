@@ -3,8 +3,8 @@ package com.nathanpaternoster.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.nathanpaternoster.controllers.ManagerController;
-import com.nathanpaternoster.controllers.ReimbursementRequestController;
+import com.nathanpaternoster.controllers.users.ManagerController;
+import com.nathanpaternoster.controllers.requests.ReimbursementRequestController;
 import com.nathanpaternoster.models.requests.ReimbursementRequest;
 import com.nathanpaternoster.models.users.Employee;
 import org.junit.After;

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RequestDAOImplPostgres implements RequestDAO {
-    private static final Logger log = LogManager.getLogger(RequestDAOImplPostgres.class.getName());
+    private static final Logger log = LogManager.getLogger(RequestDAOImplPostgres.class);
     private final DataSource dataSource;
 
     public RequestDAOImplPostgres(DataSource dataSource) {

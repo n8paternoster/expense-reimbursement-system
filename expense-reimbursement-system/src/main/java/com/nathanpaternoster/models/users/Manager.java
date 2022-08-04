@@ -2,6 +2,9 @@ package com.nathanpaternoster.models.users;
 
 import java.time.LocalDate;
 
+/**
+ * Class to represent an ERS manager
+ */
 public class Manager extends User {
     public Manager() {
         super();

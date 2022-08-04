@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDAOImplPostgres implements UserDAO {
-    private static final Logger log = LogManager.getLogger(UserDAOImplPostgres.class.getName());
+    private static final Logger log = LogManager.getLogger(UserDAOImplPostgres.class);
     private final DataSource dataSource;
 
     public UserDAOImplPostgres(DataSource dataSource) {

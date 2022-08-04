@@ -1,8 +1,7 @@
-package com.nathanpaternoster.controllers;
+package com.nathanpaternoster.controllers.users;
 
 import static org.junit.Assert.*;
 
-import com.nathanpaternoster.controllers.EmployeeController;
 import com.nathanpaternoster.models.users.Employee;
 import org.junit.After;
 import org.junit.Before;

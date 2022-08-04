@@ -1,4 +1,4 @@
-package com.nathanpaternoster.controllers;
+package com.nathanpaternoster.controllers.requests;
 
 import com.nathanpaternoster.services.EmailService;
 import com.nathanpaternoster.models.requests.ReimbursementRequest;
