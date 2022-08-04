@@ -2,7 +2,7 @@
 
 <web-app>
   <listener>
-    <listener-class>web.ContextListener</listener-class>
+    <listener-class>com.nathanpaternoster.web.ContextListener</listener-class>
   </listener>
 
   <context-param>

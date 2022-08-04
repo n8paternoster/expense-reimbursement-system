@@ -1,0 +1,156 @@
+2022-08-04 14:54:39,593 DEBUG c.n.c.ManagerController [main] ManagerController created
+2022-08-04 14:54:39,599 DEBUG c.n.c.ManagerController [main] Generated a random password
+2022-08-04 14:54:41,260 INFO c.n.c.ManagerController [main] Email notification for a new user's temporary password failed
+2022-08-04 14:54:41,281 DEBUG c.n.c.ReimbursementRequestController [main] ReimbursementRequestController created
+2022-08-04 14:54:41,283 DEBUG c.n.c.ReimbursementRequestController [main] ReimbursementRequestController created
+2022-08-04 14:54:41,284 DEBUG c.n.c.ReimbursementRequestController [main] ReimbursementRequestController created
+2022-08-04 14:54:41,284 INFO c.n.c.ReimbursementRequestController [main] Email notification for a resolved request failed
+2022-08-04 14:54:41,514 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 14:54:41,517 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database insert for new reimbursement request
+2022-08-04 14:54:41,519 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 14:54:41,524 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database insert for new reimbursement request
+2022-08-04 14:54:41,524 ERROR c.n.s.RequestDAOImplPostgres [main] Database insert failed
+2022-08-04 14:54:41,527 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 14:54:41,530 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Resolved' requests
+2022-08-04 14:54:41,531 DEBUG c.n.s.RequestDAOImplPostgres [main] Database query found a reimbursement request
+2022-08-04 14:54:41,532 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Resolved' requests
+2022-08-04 14:54:41,532 ERROR c.n.s.RequestDAOImplPostgres [main] Database query failed
+2022-08-04 14:54:41,533 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 14:54:41,535 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Pending' requests belonging to one user
+2022-08-04 14:54:41,536 DEBUG c.n.s.RequestDAOImplPostgres [main] Database query found a reimbursement request
+2022-08-04 14:54:41,536 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Pending' requests belonging to one user
+2022-08-04 14:54:41,537 ERROR c.n.s.RequestDAOImplPostgres [main] Database query failed
+2022-08-04 14:54:41,538 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 14:54:41,541 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Pending' requests
+2022-08-04 14:54:41,542 DEBUG c.n.s.RequestDAOImplPostgres [main] Database query found a reimbursement request
+2022-08-04 14:54:41,542 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Pending' requests
+2022-08-04 14:54:41,543 ERROR c.n.s.RequestDAOImplPostgres [main] Database query failed
+2022-08-04 14:54:41,544 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 14:54:41,546 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Resolved' requests belonging to one user
+2022-08-04 14:54:41,547 DEBUG c.n.s.RequestDAOImplPostgres [main] Database query found a reimbursement request
+2022-08-04 14:54:41,548 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Resolved' requests belonging to one user
+2022-08-04 14:54:41,548 ERROR c.n.s.RequestDAOImplPostgres [main] Database query failed
+2022-08-04 14:54:41,549 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 14:54:41,550 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for existing reimbursement request
+2022-08-04 14:54:41,551 DEBUG c.n.s.RequestDAOImplPostgres [main] Database query found a reimbursement request
+2022-08-04 14:54:41,552 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 14:54:41,553 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for existing reimbursement request
+2022-08-04 14:54:41,554 ERROR c.n.s.RequestDAOImplPostgres [main] Database query failed
+2022-08-04 14:54:41,554 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 14:54:41,557 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database update for a request's status
+2022-08-04 14:54:41,558 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database update for a request's status
+2022-08-04 14:54:41,558 ERROR c.n.s.RequestDAOImplPostgres [main] Database update failed
+2022-08-04 14:54:41,568 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 14:54:41,572 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for existing user
+2022-08-04 14:54:41,572 ERROR c.n.s.UserDAOImplPostgres [main] Database query failed
+2022-08-04 14:54:41,573 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 14:54:41,574 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database insert for new user
+2022-08-04 14:54:41,575 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 14:54:41,576 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database insert for new user
+2022-08-04 14:54:41,577 ERROR c.n.s.UserDAOImplPostgres [main] Database insert failed
+2022-08-04 14:54:41,577 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 14:54:41,578 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database update for existing user
+2022-08-04 14:54:41,579 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database update for existing user
+2022-08-04 14:54:41,580 ERROR c.n.s.UserDAOImplPostgres [main] Database update failed
+2022-08-04 14:54:41,581 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 14:54:41,583 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for user authentication
+2022-08-04 14:54:41,583 ERROR c.n.s.UserDAOImplPostgres [main] Database query failed
+2022-08-04 14:54:41,583 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 14:54:41,584 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for existing user
+2022-08-04 14:54:41,585 DEBUG c.n.s.UserDAOImplPostgres [main] Database query found an employee
+2022-08-04 14:54:41,585 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 14:54:41,587 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for user authentication
+2022-08-04 14:54:41,587 DEBUG c.n.s.UserDAOImplPostgres [main] Employee successfully authenticated
+2022-08-04 14:54:41,588 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 14:54:41,590 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for email availability
+2022-08-04 14:54:41,591 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for email availability
+2022-08-04 14:54:41,592 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 14:54:41,593 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for all employees
+2022-08-04 14:54:41,876 DEBUG c.n.w.ManagerServlet [main] ManagerServlet doGet called with: /123/employees/777
+2022-08-04 14:54:41,877 DEBUG c.n.w.ManagerServlet [main] Retrieved an employee's profile for a manager
+2022-08-04 14:54:41,933 DEBUG c.n.w.ManagerServlet [main] ManagerServlet doGet called with: /123/requests/pending
+2022-08-04 14:54:41,934 DEBUG c.n.w.ManagerServlet [main] Retrieved reimbursement requests for an employee
+2022-08-04 14:54:41,937 DEBUG c.n.w.ManagerServlet [main] ManagerServlet doGet called with: /123/requests/employee/555
+2022-08-04 14:54:41,939 DEBUG c.n.w.ManagerServlet [main] Retrieved an employee's reimbursement requests for a manager
+2022-08-04 14:54:41,944 DEBUG c.n.w.ManagerServlet [main] ManagerServlet doGet called with: /123/employees/all
+2022-08-04 14:54:41,944 DEBUG c.n.w.ManagerServlet [main] Retrieved all employees for an authorized manager
+2022-08-04 14:54:41,946 DEBUG c.n.w.ManagerServlet [main] ManagerServlet doGet called with: /123/requests/999
+2022-08-04 14:54:41,947 DEBUG c.n.w.ManagerServlet [main] Retrieved a reimbursement request for a manager
+2022-08-04 15:04:54,955 DEBUG c.n.c.ManagerController [main] ManagerController created
+2022-08-04 15:04:54,961 DEBUG c.n.c.ManagerController [main] Generated a random password
+2022-08-04 15:04:56,628 INFO c.n.c.ManagerController [main] Email notification for a new user's temporary password failed
+2022-08-04 15:04:56,643 DEBUG c.n.c.ReimbursementRequestController [main] ReimbursementRequestController created
+2022-08-04 15:04:56,645 DEBUG c.n.c.ReimbursementRequestController [main] ReimbursementRequestController created
+2022-08-04 15:04:56,646 DEBUG c.n.c.ReimbursementRequestController [main] ReimbursementRequestController created
+2022-08-04 15:04:56,647 INFO c.n.c.ReimbursementRequestController [main] Email notification for a resolved request failed
+2022-08-04 15:04:56,926 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 15:04:56,930 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database insert for new reimbursement request
+2022-08-04 15:04:56,932 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 15:04:56,935 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database insert for new reimbursement request
+2022-08-04 15:04:56,936 ERROR c.n.s.RequestDAOImplPostgres [main] Database insert failed
+2022-08-04 15:04:56,937 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 15:04:56,939 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Resolved' requests
+2022-08-04 15:04:56,940 DEBUG c.n.s.RequestDAOImplPostgres [main] Database query found a reimbursement request
+2022-08-04 15:04:56,941 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Resolved' requests
+2022-08-04 15:04:56,941 ERROR c.n.s.RequestDAOImplPostgres [main] Database query failed
+2022-08-04 15:04:56,942 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 15:04:56,944 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Pending' requests belonging to one user
+2022-08-04 15:04:56,944 DEBUG c.n.s.RequestDAOImplPostgres [main] Database query found a reimbursement request
+2022-08-04 15:04:56,945 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Pending' requests belonging to one user
+2022-08-04 15:04:56,945 ERROR c.n.s.RequestDAOImplPostgres [main] Database query failed
+2022-08-04 15:04:56,946 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 15:04:56,952 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Pending' requests
+2022-08-04 15:04:56,954 DEBUG c.n.s.RequestDAOImplPostgres [main] Database query found a reimbursement request
+2022-08-04 15:04:56,954 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Pending' requests
+2022-08-04 15:04:56,954 ERROR c.n.s.RequestDAOImplPostgres [main] Database query failed
+2022-08-04 15:04:56,955 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 15:04:56,958 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Resolved' requests belonging to one user
+2022-08-04 15:04:56,960 DEBUG c.n.s.RequestDAOImplPostgres [main] Database query found a reimbursement request
+2022-08-04 15:04:56,960 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for 'Resolved' requests belonging to one user
+2022-08-04 15:04:56,960 ERROR c.n.s.RequestDAOImplPostgres [main] Database query failed
+2022-08-04 15:04:56,962 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 15:04:56,963 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for existing reimbursement request
+2022-08-04 15:04:56,964 DEBUG c.n.s.RequestDAOImplPostgres [main] Database query found a reimbursement request
+2022-08-04 15:04:56,965 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 15:04:56,966 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database query for existing reimbursement request
+2022-08-04 15:04:56,967 ERROR c.n.s.RequestDAOImplPostgres [main] Database query failed
+2022-08-04 15:04:56,967 DEBUG c.n.s.RequestDAOImplPostgres [main] Request DAO created
+2022-08-04 15:04:56,969 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database update for a request's status
+2022-08-04 15:04:56,970 DEBUG c.n.s.RequestDAOImplPostgres [main] Attempting database update for a request's status
+2022-08-04 15:04:56,970 ERROR c.n.s.RequestDAOImplPostgres [main] Database update failed
+2022-08-04 15:04:56,979 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 15:04:56,980 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for existing user
+2022-08-04 15:04:56,981 ERROR c.n.s.UserDAOImplPostgres [main] Database query failed
+2022-08-04 15:04:56,981 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 15:04:56,983 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database insert for new user
+2022-08-04 15:04:56,984 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 15:04:56,985 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database insert for new user
+2022-08-04 15:04:56,986 ERROR c.n.s.UserDAOImplPostgres [main] Database insert failed
+2022-08-04 15:04:56,986 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 15:04:56,987 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database update for existing user
+2022-08-04 15:04:56,988 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database update for existing user
+2022-08-04 15:04:56,989 ERROR c.n.s.UserDAOImplPostgres [main] Database update failed
+2022-08-04 15:04:56,990 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 15:04:56,991 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for user authentication
+2022-08-04 15:04:56,992 ERROR c.n.s.UserDAOImplPostgres [main] Database query failed
+2022-08-04 15:04:56,992 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 15:04:56,993 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for existing user
+2022-08-04 15:04:56,994 DEBUG c.n.s.UserDAOImplPostgres [main] Database query found an employee
+2022-08-04 15:04:56,994 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 15:04:56,995 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for user authentication
+2022-08-04 15:04:56,996 DEBUG c.n.s.UserDAOImplPostgres [main] Employee successfully authenticated
+2022-08-04 15:04:56,997 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 15:04:56,999 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for email availability
+2022-08-04 15:04:56,999 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for email availability
+2022-08-04 15:04:57,000 DEBUG c.n.s.UserDAOImplPostgres [main] PostgreSQL DAO created
+2022-08-04 15:04:57,001 DEBUG c.n.s.UserDAOImplPostgres [main] Attempting database query for all employees
+2022-08-04 15:04:57,253 DEBUG c.n.w.ManagerServlet [main] ManagerServlet doGet called with: /123/employees/777
+2022-08-04 15:04:57,254 DEBUG c.n.w.ManagerServlet [main] Retrieved an employee's profile for a manager
+2022-08-04 15:04:57,303 DEBUG c.n.w.ManagerServlet [main] ManagerServlet doGet called with: /123/requests/pending
+2022-08-04 15:04:57,303 DEBUG c.n.w.ManagerServlet [main] Retrieved reimbursement requests for an employee
+2022-08-04 15:04:57,305 DEBUG c.n.w.ManagerServlet [main] ManagerServlet doGet called with: /123/requests/employee/555
+2022-08-04 15:04:57,306 DEBUG c.n.w.ManagerServlet [main] Retrieved an employee's reimbursement requests for a manager
+2022-08-04 15:04:57,310 DEBUG c.n.w.ManagerServlet [main] ManagerServlet doGet called with: /123/employees/all
+2022-08-04 15:04:57,310 DEBUG c.n.w.ManagerServlet [main] Retrieved all employees for an authorized manager
+2022-08-04 15:04:57,312 DEBUG c.n.w.ManagerServlet [main] ManagerServlet doGet called with: /123/requests/999
+2022-08-04 15:04:57,313 DEBUG c.n.w.ManagerServlet [main] Retrieved a reimbursement request for a manager
