@@ -27,6 +27,6 @@ public class ManagerControllerTest {
     public void testAddNewEmployee() {
         Mockito.when(testDAO.addNewUser(Mockito.any())).thenReturn(10);
         Mockito.when(testDAO.emailIsAvailable(Mockito.anyString())).thenReturn(true);
-        assertEquals(10, testController.addNewEmployee("password123", "name", "name", LocalDate.now(), "email"));
+        assertEquals(10, testController.addNewEmployee("name", "name", LocalDate.now(), "email"));
     }
 }

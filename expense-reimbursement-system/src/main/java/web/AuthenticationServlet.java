@@ -62,7 +62,14 @@ public class AuthenticationServlet extends HttpServlet {
         log.debug("AuthenticationServlet doPost called with: " + req.getPathInfo());
 
         // Get client login input
-        LoginRequest loginRequest = om.readValue(req.getInputStream(), LoginRequest.class);
+        LoginRequest loginRequest;
+        try {
+            loginRequest = om.readValue(req.getInputStream(), LoginRequest.class);
+        } catch (IOException e) {
+            resp.getWriter().println("Invalid login parameters");
+            resp.setStatus(400);
+            return;
+        }
 
         // Authenticate login
         HttpSession session = req.getSession(false);

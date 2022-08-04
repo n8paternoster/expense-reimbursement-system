@@ -3,20 +3,21 @@ package controllers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import services.RequestDAO;
+import services.UserDAO;
 
 import static org.junit.Assert.*;
 
 public class ReimbursementRequestControllerTest {
     private ReimbursementRequestController testController;
-    private RequestDAO testDao;
+    private RequestDAO testRequestDAO;
 
     @Before
     public void setUp() throws Exception {
-        testDao = Mockito.mock(RequestDAO.class);
-        testController = new ReimbursementRequestController(testDao);
+        testRequestDAO = Mockito.mock(RequestDAO.class);
+        UserDAO testUserDAO = Mockito.mock(UserDAO.class);
+        testController = new ReimbursementRequestController(testRequestDAO, testUserDAO);
     }
     @After
     public void tearDown() throws Exception {
@@ -37,14 +38,14 @@ public class ReimbursementRequestControllerTest {
 
     @Test
     public void testSubmitNewRequest() {
-        Mockito.when(testDao.addRequest(Mockito.any())).thenReturn(-12);
+        Mockito.when(testRequestDAO.addRequest(Mockito.any())).thenReturn(-12);
         assertEquals(-1, testController.submitNewRequest(1, "123", "", ""));
         assertThrows(RuntimeException.class, () -> testController.submitNewRequest(1, "-12", "", ""));
     }
 
     @Test
     public void testResolveRequest() {
-        Mockito.when(testDao.resolveRequest(Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString())).thenReturn(true);
+        Mockito.when(testRequestDAO.resolveRequest(Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString())).thenReturn(true);
         assertTrue(testController.resolveRequest(1, 1, true));
     }
 }

@@ -58,7 +58,7 @@ public class ManagerServlet extends HttpServlet {
         UserDAO userDao = (UserDAO) getServletContext().getAttribute("userDAO");
         RequestDAO requestDAO = (RequestDAO) getServletContext().getAttribute("requestDAO");
         managerController = new ManagerController(userDao);
-        requestController = new ReimbursementRequestController(requestDAO);
+        requestController = new ReimbursementRequestController(requestDAO, userDao);
         log.debug("ManagerServlet initialized");
     }
 
@@ -130,6 +130,7 @@ public class ManagerServlet extends HttpServlet {
                         List<Employee> employees = managerController.viewAllEmployees();
                         if (employees == null) {
                             log.warn("Failed to retrieve all employees for an authorized manager");
+                            resp.getWriter().println("No employees found");
                             resp.setStatus(404);    // employees not found
                         } else {
                             log.debug("Retrieved all employees for an authorized manager");
@@ -155,12 +156,13 @@ public class ManagerServlet extends HttpServlet {
                             }
                         } catch (NumberFormatException e) {
                             log.info("An invalid request was made for an employee profile with specified id '" + params[3] + "'");
+                            resp.getWriter().println("Invalid employee ID entered");
                             resp.setStatus(400);        // invalid employeeID entered
                         }
                     }
                 } else {
                     log.info("A GET request was made with too many parameters");
-                    resp.setStatus(400);
+                    resp.setStatus(404);
                 }
             } else if (params[2].equalsIgnoreCase("requests")) {
                 if (params.length == 3) {
@@ -226,9 +228,6 @@ public class ManagerServlet extends HttpServlet {
                             resp.setContentType("application/json");
                             RequestArray arr = new RequestArray(requests);
                             resp.getWriter().write(om.writeValueAsString(arr));
-//                            for (ReimbursementRequest r : requests) {
-//                                resp.getWriter().write(om.writeValueAsString(r));
-//                            }
                             resp.setStatus(200);        // reimbursement requests found
                         }
                     } catch (NumberFormatException e) {
@@ -237,15 +236,15 @@ public class ManagerServlet extends HttpServlet {
                     }
                 } else {
                     log.info("A GET request was made with too many parameters");
-                    resp.setStatus(400);
+                    resp.setStatus(404);
                 }
             } else {
                 log.info("An invalid GET request was made");
-                resp.setStatus(400);
+                resp.setStatus(404);
             }
         } catch (IndexOutOfBoundsException e) {
             log.info("An invalid GET request was made");
-            resp.setStatus(400);    // invalid get request url
+            resp.setStatus(404);    // invalid get request url
         }
     }
 
@@ -281,13 +280,13 @@ public class ManagerServlet extends HttpServlet {
             } else if (params.length == 4 && params[2].equalsIgnoreCase("employees") && params[3].equalsIgnoreCase("new")) {
                 // manager/(userID)/employees/new
 
-                // Get employee input
-                Employee e = om.readValue(req.getInputStream(), Employee.class);
                 try {
-                    int employeeID = managerController.addNewEmployee(e.getPassword(), e.getFirstName(), e.getLastName(), e.getDob(), e.getEmail());
+                    Employee e = om.readValue(req.getInputStream(), Employee.class);
+                    int employeeID = managerController.addNewEmployee(e.getFirstName(), e.getLastName(), e.getDob(), e.getEmail());
                     if (employeeID < 1) {
-                        log.warn("Failed to add a valid new employee");
-                        resp.setStatus(500);    // failed to add the new employee
+                        log.warn("Failed to add the new employee");
+                        resp.getWriter().println("Employee could not be added to the database");
+                        resp.setStatus(400);    // failed to add the new employee
                     } else {
                         log.info("Successfully added a new employee");
                         Employee newEmployee = managerController.viewEmployee(employeeID);
@@ -303,11 +302,11 @@ public class ManagerServlet extends HttpServlet {
                 }
             } else {
                 log.info("An invalid POST request was made");
-                resp.setStatus(400);    // invalid post request url
+                resp.setStatus(404);    // invalid post request url
             }
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
             log.info("An invalid POST request was made");
-            resp.setStatus(400);    // invalid post request url
+            resp.setStatus(404);    // invalid post request url
         }
     }
 
@@ -359,7 +358,7 @@ public class ManagerServlet extends HttpServlet {
                                 resp.setStatus(500);    // failed to update the reimbursement request status
                             }
                         } catch (IOException e) {
-                            log.info("Attempted to resolve a reimbursement request with a non-boolean value");
+                            log.info("Invalid resolution parameter entered");
                             resp.setStatus(400);    // invalid input
                         }
                     }
@@ -369,11 +368,11 @@ public class ManagerServlet extends HttpServlet {
                 }
             } else {
                 log.info("An invalid PUT request was made");
-                resp.setStatus(400);        // invalid put request url
+                resp.setStatus(404);        // invalid put request url
             }
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
             log.info("An invalid PUT request was made");
-            resp.setStatus(400);    // invalid put request url
+            resp.setStatus(404);    // invalid put request url
         }
     }
 }

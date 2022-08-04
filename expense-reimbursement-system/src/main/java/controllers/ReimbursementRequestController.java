@@ -1,7 +1,14 @@
 package controllers;
 
 import models.requests.ReimbursementRequest;
+import models.users.Employee;
+import models.users.User;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import services.EmailService;
 import services.RequestDAO;
+import services.UserDAO;
+import web.ManagerServlet;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,10 +18,14 @@ import java.util.List;
  * Class to handle actions on requests
  */
 public class ReimbursementRequestController {
-    private final RequestDAO dao;
+    private static final Logger log = LogManager.getLogger(ReimbursementRequestController.class.getName());
+    private final RequestDAO requestDAO;
+    private final UserDAO userDAO;
 
-    public ReimbursementRequestController(RequestDAO dao) {
-        this.dao = dao;
+    public ReimbursementRequestController(RequestDAO requestDAO, UserDAO userDAO) {
+        this.requestDAO = requestDAO;
+        this.userDAO = userDAO;
+        log.debug("ReimbursementRequestController created");
     }
 
     /**
@@ -55,7 +66,7 @@ public class ReimbursementRequestController {
 
         // add the new request
         ReimbursementRequest newRequest = new ReimbursementRequest(-1, submitterID, -1, amountInCents, category, description, LocalDateTime.now(), null, "Pending");
-        int generatedID = dao.addRequest(newRequest);
+        int generatedID = requestDAO.addRequest(newRequest);
         if (generatedID < 0) generatedID = -1;
         return generatedID;
     }
@@ -69,7 +80,24 @@ public class ReimbursementRequestController {
      */
     public boolean resolveRequest(int resolverID, int requestID, boolean approved) {
         String newStatus = approved ? "Approved" : "Denied";
-        return dao.resolveRequest(resolverID, requestID, newStatus);
+        boolean success = requestDAO.resolveRequest(resolverID, requestID, newStatus);
+        if (success) {
+            try {
+                EmailService emailService = new EmailService();
+                ReimbursementRequest r = requestDAO.getRequest(requestID);
+                User u = userDAO.getUser(r.getSubmitterID());
+                String to = ((Employee) u).getEmail();
+                String subject = "Reimbursement Request Resolution";
+                String body = u.getFirstName() + ",\n\nYour reimbursement request for " + r.getCategory() +
+                        " in the amount of " + r.getStringAmount() + " has been " + r.getStatus() +
+                        ".\n\nThis is an automated message. For any questions or concerns please contact your direct manager." +
+                        "\n\nERS Department of Billing";
+                emailService.sendEmail(to, subject, body);
+            } catch (RuntimeException e) {
+                log.info("Email notification for a resolved request failed");
+            }
+        }
+        return success;
     }
 
     /**
@@ -78,7 +106,7 @@ public class ReimbursementRequestController {
      * @return the reimbursement request if found, null otherwise
      */
     public ReimbursementRequest viewRequest(int requestID) {
-        return dao.getRequest(requestID);
+        return requestDAO.getRequest(requestID);
     }
 
     /**
@@ -87,7 +115,7 @@ public class ReimbursementRequestController {
      * @return a list of reimbursement requests
      */
     public List<ReimbursementRequest> viewRequests(int userID) {
-        return dao.getRequests(userID);
+        return requestDAO.getRequests(userID);
     }
 
     /**
@@ -96,7 +124,7 @@ public class ReimbursementRequestController {
      * @return a list of reimbursement requests
      */
     public List<ReimbursementRequest> viewPendingRequests(int userID) {
-        return dao.getPendingRequests(userID);
+        return requestDAO.getPendingRequests(userID);
     }
 
     /**
@@ -105,7 +133,7 @@ public class ReimbursementRequestController {
      * @return a list of reimbursement requests
      */
     public List<ReimbursementRequest> viewResolvedRequests(int userID) {
-        return dao.getResolvedRequests(userID);
+        return requestDAO.getResolvedRequests(userID);
     }
 
     /**
@@ -113,7 +141,7 @@ public class ReimbursementRequestController {
      * @return  a list of reimbursement requests
      */
     public List<ReimbursementRequest> viewAllRequests() {
-        return dao.getAllRequests();
+        return requestDAO.getAllRequests();
     }
 
     /**
@@ -121,7 +149,7 @@ public class ReimbursementRequestController {
      * @return  a list of reimbursement requests
      */
     public List<ReimbursementRequest> viewAllPendingRequests() {
-        return dao.getAllPendingRequests();
+        return requestDAO.getAllPendingRequests();
     }
 
     /**
@@ -129,6 +157,6 @@ public class ReimbursementRequestController {
      * @return  a list of reimbursement requests
      */
     public List<ReimbursementRequest> viewAllResolvedRequests() {
-        return dao.getAllResolvedRequests();
+        return requestDAO.getAllResolvedRequests();
     }
 }

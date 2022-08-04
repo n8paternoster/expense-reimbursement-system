@@ -9,7 +9,7 @@ import java.time.LocalDate;
  * Base class to handle user authentication and input validation
  */
 public class UserController {
-    private static final int MIN_PASSWORD_LENGTH = 7;
+    protected static final int MIN_PASSWORD_LENGTH = 7;
     protected UserDAO dao;
 
     public UserController(UserDAO dao) {

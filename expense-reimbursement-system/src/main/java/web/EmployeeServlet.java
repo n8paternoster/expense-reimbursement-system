@@ -57,7 +57,7 @@ public class EmployeeServlet extends HttpServlet {
         UserDAO userDao = (UserDAO) getServletContext().getAttribute("userDAO");
         RequestDAO requestDAO = (RequestDAO) getServletContext().getAttribute("requestDAO");
         employeeController = new EmployeeController(userDao);
-        requestController = new ReimbursementRequestController(requestDAO);
+        requestController = new ReimbursementRequestController(requestDAO, userDao);
         log.debug("EmployeeServlet initialized");
     }
 
@@ -117,6 +117,7 @@ public class EmployeeServlet extends HttpServlet {
                 Employee e = employeeController.getProfile(userID);
                 if (e == null) {
                     log.warn("Failed to retrieve profile information for an authorized employee");
+                    resp.getWriter().println("Employee profile not found");
                     resp.setStatus(404);    // employee profile not found
                 } else {
                     resp.setContentType("application/json");
@@ -145,6 +146,7 @@ public class EmployeeServlet extends HttpServlet {
                         }
                         if (requests == null) {
                             log.warn("Failed to retrieve reimbursement requests for an authorized employee");
+                            resp.getWriter().println("No reimbursement requests found");
                             resp.setStatus(404);    // reimbursement requests not found
                         } else {
                             log.debug("Retrieved reimbursement requests for an employee");
@@ -161,9 +163,11 @@ public class EmployeeServlet extends HttpServlet {
                             ReimbursementRequest r = requestController.viewRequest(requestID);
                             if (r == null) {
                                 log.debug("The reimbursement request with id '" + requestID + "' was not found");
+                                resp.getWriter().println("Reimbursement request not found");
                                 resp.setStatus(404);    // reimbursement request not found
                             } else if (r.getSubmitterID() != userID) {
                                 log.info("Authorized user requested a reimbursement request belonging to another user");
+                                resp.getWriter().println("Reimbursement request does not belong to this user");
                                 resp.setStatus(403);    // reimbursement request does not belong to this user
                             } else {
                                 log.debug("Retrieved a reimbursement request for an employee");
@@ -173,20 +177,22 @@ public class EmployeeServlet extends HttpServlet {
                             }
                         } catch (NumberFormatException e) {
                             log.info("An invalid request was made for a reimbursement request with specified id '" + params[3] + "'");
+                            resp.getWriter().println("");
+                            resp.getWriter().println("Invalid request ID entered");
                             resp.setStatus(400);
                         }
                     }
                 } else {
                     log.info("A GET request was made with too many parameters");
-                    resp.setStatus(400);
+                    resp.setStatus(404);
                 }
             } else {
                 log.info("An invalid GET request was made");
-                resp.setStatus(400);
+                resp.setStatus(404);
             }
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
             log.info("An invalid GET request was made");
-            resp.setStatus(400);
+            resp.setStatus(404);
         }
     }
 
@@ -224,16 +230,21 @@ public class EmployeeServlet extends HttpServlet {
                 // employees/(userID)/requests/new
 
                 // Get reimbursement request input
-                ReimbursementInput input = om.readValue(req.getInputStream(), ReimbursementInput.class);
-                System.out.println(input.amount);
-                System.out.println(input.category);
-                System.out.println(input.description);
+                ReimbursementInput input;
+                try {
+                    input = om.readValue(req.getInputStream(), ReimbursementInput.class);
+                } catch (IOException e) {
+                    resp.getWriter().write("Invalid reimbursement request parameters");
+                    resp.setStatus(400);
+                    return;
+                }
 
                 try {
                     int requestID = requestController.submitNewRequest(userID, input.amount, input.category, input.description);
                     if (requestID < 0) {
                         log.warn("Failed to add a valid new request");
-                        resp.setStatus(400);    // failed to add new request
+                        resp.getWriter().println("Failed to add the request");
+                        resp.setStatus(500);    // failed to add new request
                     } else {
                         log.info("Successfully added a new request");
                         ReimbursementRequest request = requestController.viewRequest(requestID);
@@ -249,11 +260,11 @@ public class EmployeeServlet extends HttpServlet {
                 }
             } else {
                 log.info("An invalid POST request was made");
-                resp.setStatus(400);
+                resp.setStatus(404);
             }
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
             log.info("An invalid POST request was made");
-            resp.setStatus(400);    // invalid request
+            resp.setStatus(404);    // invalid request
         }
     }
 
@@ -302,11 +313,11 @@ public class EmployeeServlet extends HttpServlet {
                 }
             } else {
                 log.info("An invalid PUT request was made");
-                resp.setStatus(400);
+                resp.setStatus(404);
             }
         } catch (IndexOutOfBoundsException | IOException e) {
             log.info("An invalid PUT request was made");
-            resp.setStatus(400);    // invalid request
+            resp.setStatus(404);    // invalid request
         }
     }
 }

@@ -1,0 +1,36 @@
+LoginServlet
+
+/login						POST	Redirect to /employee/(userID) or /manager(userID)
+
+EmployeeServlet
+
+/employee					GET	
+/employee/new					POST
+/employee/(userID)				GET
+/employee/(userID)/profile			GET	
+/employee/(userID)/update			PUT
+/employee/(userID)/requests			GET	
+/employee/(userID)/requests/new			POST
+/employee/(userID)/requests/(requestID)		GET
+/employee/(userID)/requests/all			GET	
+/employee/(userID)/requests/pending		GET
+/employee/(userID)/requests/resolved		GET
+/employee/(userID)/logout			POST	Redirect to /login
+
+ManagerServlet
+
+/manager					GET
+/manager/new					POST
+/manager/(userID)				GET
+/manager/(userID)/employees			GET
+/manager/(userID)/employees/new			POST
+/manager/(userID)/employees/(userID)		GET		
+/manager/(userID)/employees/all			GET	
+/manager/(userID)/requests			GET
+/manager/(userID)/requests/(requestID)		GET
+/manager/(userID)/requests/all			GET
+/manager/(userID)/requests/pending		GET
+/manager/(userID)/requests/resolved		GET
+/manager/(userID)/requests/employee/(employeeID)GET
+/manager/(userID)/requests/update/(requestID)	PUT
+/manager/(userID)/logout			POST	Redirect to /login
